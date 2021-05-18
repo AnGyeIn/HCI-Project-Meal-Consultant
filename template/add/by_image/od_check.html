@@ -1,0 +1,20 @@
+{% set title = "Object detection 결과 확인" %}
+{% extends "layout/base.html" %}
+
+{% block content %}
+
+<div>
+    <p>이것들이 맞나요?</p>
+    <p>(object detection한 이미지)</p>
+    <p>
+        <p1>잘못 인식된 식재료는 클릭해서 수정해주세요.</p1>
+        <p1><a href='/add/by_image/od_correction_omitted'>누락된 식재료 추가</a></p1>
+    </p>
+    <p><a href='/add/by_image/od_correction_wrong'>(인식된 식재료 목록)</a></p>
+    <p>
+        <p1><a href='/'>확인</a></p1>
+        <p1><a href='/add/selection'>취소</a></p1>
+    </p>
+</div>
+
+{% endblock %}

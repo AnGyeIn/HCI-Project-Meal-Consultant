@@ -1,0 +1,26 @@
+{% set title = "메인페이지" %}
+{% extends "layout/base.html" %}
+
+{% block content %}
+
+<div>
+    <!--식재료 정보가 없는 경우-->
+    <!--todo-->
+
+    <!--식재료 정보가 있는 경우-->
+    <p>
+        <p1>우리 집 식재료</p1>
+        <button type="button"><a href='/add/selection'>+</a></button>
+        <button type="button"><a href='/calendar/monthly'>5월</a></button>
+        <button type="button">전체o</button>
+    </p>
+    <div>
+        <p>(식재료 현황)</p>
+    </div>
+    <p>
+        <button type="button"><a href='/update/mealname'>요리했어요</a></button>
+        <button type="button"><a href='/recommend/list'>요리 추천</a></button>
+    </p>
+</div>
+
+{% endblock %}

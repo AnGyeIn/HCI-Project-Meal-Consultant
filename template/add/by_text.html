@@ -1,0 +1,25 @@
+{% set title = "텍스트로 식재료 추가" %}
+{% extends "layout/base.html" %}
+
+{% block content %}
+
+<div>
+    <p>식재료 추가</p>
+    <p>
+        <p1>식재료명</p1>
+        <p1>개수</p1>
+        <p1>구입날짜</p1>
+    </p>
+    <p>
+        <p1>(사용자 입력)</p1>
+        <p1>(사용자 입력)개</p1>
+        <p1>2021.XX.XX</p1>
+    </p>
+    <button type="button">+</button>
+    <p>
+        <p1><a href="/">확인</a></p1>
+        <p1><a href="/add/selection">취소</a></p1>
+    </p>
+</div>
+
+{% endblock %}

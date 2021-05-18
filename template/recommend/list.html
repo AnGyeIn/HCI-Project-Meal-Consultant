@@ -1,0 +1,26 @@
+{% set title = "요리 추천" %}
+{% extends "layout/base.html" %}
+
+{% block content %}
+
+<div>
+    <p>
+        <p1>
+            <p>해 본 요리</p>
+            <!--해 본 요리 기록이 없으면-->
+            <p>아직 입력된 요리가 없어요!</p>
+            <!--해 본 요리 기록이 있으면-->
+            <p><a href='/recommend/recipe'>(해 본 요리 중 추천1)</a></p>
+        </p1>
+        <br>
+        <p1>
+            <p>안 해 본 요리</p>
+            <p><a href='/recommend/recipe'>(안 해 본 요리 중 추천1)</a></p>
+            <p><a href='/recommend/recipe'>(안 해 본 요리 중 추천2)</a></p>
+            <p><a href='/recommend/recipe'>(안 해 본 요리 중 추천3)</a></p>
+        </p1>
+    </p>
+    <p><a href='/'>취소</a></p>
+</div>
+
+{% endblock %}

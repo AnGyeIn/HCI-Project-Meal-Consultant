@@ -1,0 +1,25 @@
+{
+  "name": "HCI_Project_Meal_Consultant",
+  "version": "1.0.0",
+  "description": "init.",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx nodemon -e js,html server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AnGyeIn/HCI_Project_Meal_Consultant.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AnGyeIn/HCI_Project_Meal_Consultant/issues"
+  },
+  "homepage": "https://github.com/AnGyeIn/HCI_Project_Meal_Consultant#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "morgan": "^1.10.0",
+    "nunjucks": "^3.2.3"
+  }
+}

@@ -1,0 +1,22 @@
+{% set title = "Object detection 수정 - 누락된 식재료 추가" %}
+{% extends "layout/base.html" %}
+
+{% block content %}
+
+<div>
+    <p>빠뜨린 식재료를 드래그해주세요!</p>
+    <p>(식재료 이미지)</p>
+    <!--사용자가 드래그 한 항목이 없으면 다음 요소는 제거-->
+    <p>무엇인가요?</p>
+    <!--사용자가 드래그 한 항목마다 다음 요소 추가 - 드래그한 영역을 클릭하면 취소(요소 제거)-->
+    <p>
+        <p1>(드래그한 영역 복사)</p1>
+        <p1>(사용자가 드래그한 영역의 식재료 이름 입력)</p1>
+    </p>    
+    <p>
+        <p1><a href='/add/by_image/od_check'>확인</a></p1>
+        <p1><a href='/add/by_image/od_check'>취소</a></p1>
+    </p>
+</div>
+
+{% endblock %}

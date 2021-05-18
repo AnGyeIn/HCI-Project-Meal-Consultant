@@ -1,0 +1,22 @@
+{% set title = "Object detection 수정 - 잘못된 인식 결과 수정" %}
+{% extends "layout/base.html" %}
+
+{% block content %}
+
+<div>
+    <p>수정해주세요!</p>
+    <p>(식재료 이미지)</p>
+    <p>식재료인가요?</p>
+    <button type="button"><a href='/add/by_image/od_check'>식재료가 아님</a></button>
+    <p>식재료라면 무엇인가요?</p>
+    <p>
+        <p1>재료명: </p1>
+        <p1>(사용자가 재료명 입력)</p1>
+    </p>
+    <p>
+        <p1><a href='/add/by_image/od_check'>확인</a></p1>
+        <p1><a href='/add/by_image/od_check'>취소</a></p1>
+    </p>
+</div>
+
+{% endblock %}

@@ -1,0 +1,29 @@
+{% set title = "사용한 식재료" %}
+{% extends "layout/base.html" %}
+
+{% block content %}
+
+<div>
+    <p>얼마나 썼나요?</p>
+
+    <!--식재료만큼 반복-->
+    <p>
+        <p1>(식재료 이름): </p1>
+        <p1>(사용자가 사용한 식재료 개수 입력)</p1>
+        <p1>개</p1>
+    </p>
+    <p>...</p>
+    <button type="button">+</button>
+
+    <p>
+        <p1>(사용자가 인원 수 입력)</p1>
+        <p1>명이 먹었어요.</p1>
+    </p>
+
+    <p>
+        <p1><a href='/'>확인</a></p1>
+        <p1><a href='/'>취소</a></p1>
+    </p>
+</div>
+
+{% endblock %}

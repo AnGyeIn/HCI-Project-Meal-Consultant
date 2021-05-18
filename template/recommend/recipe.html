@@ -1,0 +1,31 @@
+{% set title = "요리법 검색" %}
+{% extends "layout/base.html" %}
+
+{% block content %}
+
+<div>
+    <p>(선택된 요리 이름)</p>
+    
+    <!--해 본 요리인 경우-->
+    <p>이전에 이만큼 넣었어요.</p>
+
+    <!--안 해 본 요리인 경우-->
+    <p>보통 이만큼 넣어요.</p>
+
+    <!--필요한 식재료만큼 반복-->
+    <p>(식재료명): (개수)개 / 1인분</p>
+    <p>...</p>
+    
+    <p>참고해보세요.</p>
+    <p>
+        <p1><a href='https://www.youtube.com/results?search_query=요리법'>(유튜브)</a></p1>
+        <p1><a href='https://www.google.com/search?q=요리법'>(웹)</a></p1>
+    </p>
+
+    <p>
+        <p1><a href='/'>메인으로</a></p1>
+        <p1><a href='/recommend/list/'>취소</a></p1>
+    </p>
+</div>
+
+{% endblock %}
