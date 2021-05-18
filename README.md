@@ -14,3 +14,14 @@ Then open your local server by
 And type "localhost:3000" on your browser then you can test your work.
 
 To finish your local server, type `Ctrl+C` in your terminal that running the server.
+
+## Before modifying the codes, please switch your branch for safe
+On your terminal
+
+`git branch [your own branch name]`
+
+Then new branch named [your own branch name] is created and type in
+
+`git checkout [your own branch name]`
+
+to switch your branch from 'main' to [your own brance name].
