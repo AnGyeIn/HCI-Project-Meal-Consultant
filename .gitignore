@@ -2,6 +2,7 @@
 .DS_Store*
 Icon?
 ._*
+.vscode
 
 # Windows
 Thumbs.db
@@ -13,3 +14,9 @@ node_modules
 package-lock.json
 *.log
 .env
+
+# project
+hci-meal-consultant-fae8f528b8dd.json
+uploadedImages
+test
+dataset
