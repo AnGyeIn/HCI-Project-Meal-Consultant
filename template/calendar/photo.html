@@ -3,16 +3,14 @@
 
 {% block content %}
 
-<div>
-    <p>(날짜)</p>
-    <button type="button">+</button>
-    <p>요리명 : (해당 요리 이름)</p>
-    <p>재료 : (해당 재료 목록)</p>
+<div class="subwindow">
+    <h1>(날짜)</h1>
+    <button class="basic">+</button>
+    <h2>요리명 : (해당 요리 이름)</h2>
+    <h3>재료 : (해당 재료 목록)</h3>
 
-    <p>
-        <p1><a href='/calendar/monthly'>확인</a></p1>
-        <p1><a href='/calendar/monthly'>취소</a></p1>
-    </p>
+    <button class="basic"><a href='/calendar/monthly'>확인</a></button>
+    <button class="basic"><a href='/calendar/monthly'>취소</a></button>
 </div>
 
 {% endblock %}

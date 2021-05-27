@@ -4,23 +4,17 @@
 {% block content %}
 
 <div>
-    <p>
-        <p1>
-            <p>해 본 요리</p>
-            <!--해 본 요리 기록이 없으면-->
-            <p>아직 입력된 요리가 없어요!</p>
-            <!--해 본 요리 기록이 있으면-->
-            <p><a href='/recommend/recipe'>(해 본 요리 중 추천1)</a></p>
-        </p1>
-        <br>
-        <p1>
-            <p>안 해 본 요리</p>
-            <p><a href='/recommend/recipe'>(안 해 본 요리 중 추천1)</a></p>
-            <p><a href='/recommend/recipe'>(안 해 본 요리 중 추천2)</a></p>
-            <p><a href='/recommend/recipe'>(안 해 본 요리 중 추천3)</a></p>
-        </p1>
-    </p>
-    <p><a href='/'>취소</a></p>
+    <div class="rect" style="float:left; width:50%; height:50vw; padding:1%; text-align:center;">
+        <h1>해 본 요리</h1>
+        <button class="basic" style="width:80%"><a href="/recommend/recipe">(해 본 요리 중 추천1)</a></button>
+    </div>
+    <div class="rect" style="float:left; width:50%; height:50vw; padding:1%; text-align:center;">
+        <h1>안 해 본 요리</h1>
+        <button class="basic" style="width:80%"><a href="/recommend/recipe">(안 해 본 요리 중 추천1)</a></button>
+        <button class="basic" style="width:80%"><a href="/recommend/recipe">(안 해 본 요리 중 추천2)</a></button>
+        <button class="basic" style="width:80%"><a href="/recommend/recipe">(안 해 본 요리 중 추천3)</a></button>
+    </div>
+    <button class="basic" style="float:right"><a href='/'>취소</a></button>
 </div>
 
 {% endblock %}

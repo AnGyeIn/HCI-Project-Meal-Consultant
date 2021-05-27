@@ -1,7 +1,7 @@
 const {Router} = require('express')
 const router = Router()
 
-router.get('/', async (_, res) => {
+router.get('/', (_, res) => {
     res.render('home.html')
 })
 

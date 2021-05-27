@@ -3,18 +3,180 @@
 
 {% block content %}
 
-<div>
-    <p>이것들이 맞나요?</p>
-    <p>(object detection한 이미지)</p>
-    <p>
-        <p1>잘못 인식된 식재료는 클릭해서 수정해주세요.</p1>
-        <p1><a href='/add/by_image/od_correction_omitted'>누락된 식재료 추가</a></p1>
-    </p>
-    <p><a href='/add/by_image/od_correction_wrong'>(인식된 식재료 목록)</a></p>
-    <p>
-        <p1><a href='/'>확인</a></p1>
-        <p1><a href='/add/selection'>취소</a></p1>
-    </p>
+<div style="text-align:center">
+    <h1>이것들이 맞나요?</h1>
+    <svg width="500" height="500" id="image">
+        <image xlink:href="http://localhost:3000/{{ filedir }}/{{ filename }}"
+               width="100%" height="100%">
+    </svg>
+    <h2>빠뜨린 식재료는 드래그해주세요.</h2>
+    <h2>잘못 인식된 식재료는 클릭해서 수정해주세요.</h2>
+    <form action="" method="post">
+        <table>
+            <thead>
+                <tr>
+                    <th>이미지</th>
+                    <th>식재료명</th>
+                    <th>개수</th>
+                    <th>구입 날짜</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <input type="hidden" name="detection_boxes">
+        <input type="hidden" name="max_idx">
+
+        <button class="basic" id="submit" style="margin-left:30%">
+            다 맞아요
+        </button>
+        <button class="basic" type="button">
+            <a href='/add/selection'>취소</a>
+        </button>
+    </form>
 </div>
+
+<template>
+    <tr id="tr">
+        <td><canvas id="canvas"></canvas></td>
+        <td><input id="name" type="text" style="width:10vw"></td>
+        <td><input id="count" type="number" style="width:3vw">개</td>
+        <td><input id="datepicker" type="text" style="width:10vw"></td>
+        <td><button class="basic" type="button" id="cancel">X</button></td>
+    </tr>
+</template>
+
+<script>
+    const size = 500
+    const vw = window.innerWidth / 100
+
+    let scale, margin_x, margin_y, inverse_scale
+    const img = new Image()
+    img.onload = () => {
+        scale = d3.scaleLinear()
+                    .domain([0, size])
+                    .range([0, Math.max(img.width, img.height)])
+        margin_x = (scale(size) - img.width) / 2
+        margin_y = (scale(size) - img.height) / 2
+        inverse_scale = d3.scaleLinear()
+                            .domain([0, Math.max(img.width, img.height)])
+                            .range([0, size])
+    }
+    img.src = 'http://localhost:3000/{{ filedir }}/{{ filename }}'
+
+    let idx = 0
+    const svg = d3.select('svg').append('g')
+    // todo
+    let detectionBoxes = []
+
+    function drawDetectionBoxes() {
+        svg.selectAll('rect')
+            .data(detectionBoxes, d => d.id)
+                .join(
+                    enter => enter.append('rect')
+                                    .attr('x', d => inverse_scale(d.coord[0][0]+margin_x))
+                                    .attr('y', d => inverse_scale(d.coord[0][1]+margin_y))
+                                    .attr('width', d => inverse_scale(d.coord[1][0] - d.coord[0][0]))
+                                    .attr('height', d => inverse_scale(d.coord[1][1] - d.coord[0][1]))
+                                    .attr('fill', 'None')
+                                    .attr('stroke', 'red')
+                                    .attr('stroke-width', 3),
+                    update => update.attr('x', d => inverse_scale(d.coord[0][0]+margin_x))
+                                    .attr('y', d => inverse_scale(d.coord[0][1]+margin_y))
+                                    .attr('width', d => inverse_scale(d.coord[1][0] - d.coord[0][0]))
+                                    .attr('height', d => inverse_scale(d.coord[1][1] - d.coord[0][1]))
+                                    .attr('fill', 'None')
+                                    .attr('stroke', 'red')
+                                    .attr('stroke-width', 3),
+                    exit => exit.remove()
+                )
+    }
+
+    function add_tr(coord) {
+        const [[x0, y0], [x1, y1]] = coord
+
+        const temp = $('template')[0]
+        const clon = temp.content.cloneNode(true)
+
+        clon.getElementById('tr').id = 'tr'+idx
+
+        const canvas = clon.getElementById('canvas')
+        canvas.width = 5*vw
+        canvas.height = 5*vw
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, x0, y0, x1-x0, y1-y0, 0, 0, 5*vw, 5*vw)
+
+        clon.getElementById('name').name = 'name'+idx
+        clon.getElementById('count').name = 'count'+idx
+
+        clon.getElementById('datepicker').name = 'bought_date'+idx
+        clon.getElementById('datepicker').value = d3.timeFormat('%Y-%m-%d')(new Date)
+        clon.getElementById('datepicker').id = 'datepicker'+idx
+
+        const id = idx
+        clon.getElementById('cancel').onclick = function() {
+            detectionBoxes = detectionBoxes.filter(d => d.id !== id)
+            drawDetectionBoxes()
+            $('#tr'+id).remove()
+        }
+            
+        $('tbody').append(clon)
+
+        $('#datepicker'+idx).datepicker({
+            dateFormat: "yy-mm-dd"
+        })
+
+        idx++
+    }
+
+    function brushed({selection}) {
+        if (selection) {
+            const [[x0, y0], [x1, y1]] = selection
+            const coord = [[scale(x0)-margin_x, scale(y0)-margin_y], [scale(x1)-margin_x, scale(y1)-margin_y]]
+            detectionBoxes.push({
+                id: idx,
+                coord
+            })
+            drawDetectionBoxes()
+            add_tr(coord)
+        }
+    }
+
+    const brush = d3.brush()
+                        .extent([[0, 0], [size, size]])
+                        .on('end', brushed)
+    d3.select('#image').append('g')
+                        .attr('id', 'brush')
+                        .call(brush)
+    
+    $('#submit').click(() => {
+        let $name, $count
+        let isEmpty = true
+        for (let i = 0; i < idx; i++) {
+            $name = $(`input[name=name${i}]`).val()
+            if ($name === undefined)
+                continue
+            $name = $name ? $name.length : false
+            $count = $(`input[name=count${i}]`).val()
+            $count = $count ? $count.length : false
+
+            if (!$name || !$count) {
+                alert('식재료명과 개수를 모두 입력해주세요!')
+                return false
+            }
+
+            isEmpty = false
+        }
+
+        if (isEmpty) {
+            alert('식재료를 입력해주세요!')
+            return false
+        }
+
+        $('input[name=detection_boxes]').val(JSON.stringify(detectionBoxes))
+        $('input[name=max_idx]').val(idx)
+    })
+</script>
 
 {% endblock %}

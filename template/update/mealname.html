@@ -3,13 +3,12 @@
 
 {% block content %}
 
-<div>
-    <p>어떤 요리를 했나요?</p>
-    <p>(사용자가 요리 이름 입력)</p>
-    <p>
-        <p1><a href='/update/ingredients'>확인</a></p1>
-        <p1><a href='/'>취소</a></p1>
-    </p>
+<div style="text-align:center">
+    <h1>어떤 요리를 했나요?</h1>
+    <textarea placeholder="요리명" style="width:30%"></textarea>
+    <br>
+    <button class="basic"><a href='/update/ingredients'>확인</a></button>
+    <button class="basic"><a href='/'>취소</a></button>
 </div>
 
 {% endblock %}

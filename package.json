@@ -18,8 +18,11 @@
   },
   "homepage": "https://github.com/AnGyeIn/HCI_Project_Meal_Consultant#readme",
   "dependencies": {
+    "@google-cloud/automl": "^2.4.2",
+    "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "morgan": "^1.10.0",
+    "multer": "^1.4.2",
     "nunjucks": "^3.2.3"
   }
 }

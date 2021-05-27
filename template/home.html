@@ -4,23 +4,215 @@
 {% block content %}
 
 <div>
-    <!--식재료 정보가 없는 경우-->
-    <!--todo-->
-
-    <!--식재료 정보가 있는 경우-->
-    <p>
-        <p1>우리 집 식재료</p1>
-        <button type="button"><a href='/add/selection'>+</a></button>
-        <button type="button"><a href='/calendar/monthly'>5월</a></button>
-        <button type="button">전체o</button>
-    </p>
-    <div>
-        <p>(식재료 현황)</p>
+    <div style="height:7vw">
+        <div style="float:left; width:70%; height:100%; padding-top:3%;">
+            <p1 style="font-size:200%; margin:1%;">우리 집 식재료</p1>
+            <button class="basic"><a href="/add/selection">추가</a></button>
+            <button class="basic fordata"><a href="/calendar/monthly">5월</a></button>
+        </div>
+        <div class="fordata" style="float:right; width:30%; height:100%; text-align:center;">
+            <h3>사용할 재료 선택</h3>
+            <p1 style="font-size:130%;">전체</p1>
+            <svg width="6%" height="28%">
+                <circle id="select-total" r="45%" cx="50%" cy="50%" stroke="black" style="fill:none"></circle>
+            </svg>
+        </div>
     </div>
-    <p>
-        <button type="button"><a href='/update/mealname'>요리했어요</a></button>
-        <button type="button"><a href='/recommend/list'>요리 추천</a></button>
-    </p>
+
+    <div id="items-area" class="rect" style="width:95%; margin:1% auto auto auto; text-align:center;">
+        <h1 class="emptydata">입력된 식재료가 없습니다. 가지고 계신 식재료를 추가해보세요!</h1>
+        <a class="emptydata" style="font-size:400%" href="/add/selection">+</a>
+    </div>
+    <button class="basic fordata" style="margin-left:72%"><a href='/update/mealname'>요리했어요</a></button>
+    <button class="basic fordata" id="recommend"><a href='/recommend/list'>요리 추천</a></button>
 </div>
+
+<template>
+    <div style="width:100%; height:12vw;">
+        <div style="width:8.2%; height:100%; float:left; text-align:center; margin-left:1.5%;">
+            <canvas id="canvas" style="margin-top:13%"></canvas>
+            <h4 id="name"><!--name of the ingredients--></h4>
+        </div>
+        <div style="width:3%; height:100%; float:left; text-align:center; padding-top:6%">
+            <h4 id="count"><!--total number of the ingredients-->개</h4>
+        </div>
+        <div class="rect" style="width:65%; height:60%; float:left; margin-top:1%;">
+            <svg id="histogram" width="100%" height="100%"></svg>
+        </div>
+        <div style="width:6%; height:100%; float:left; text-align:center; padding-top:2%">
+            <h4 id="oldest-duration-rest">D-<!--left days for the oldest ingredients--></h4>
+            <h4 id="oldest-count"><!--number of the oldest ingredients-->개</h4>
+        </div>
+        <div style="width:6%; height:100%; float:left;">
+            <svg width="100%" height="100%">
+                <circle id="select" r="20%" cx="50%" cy="40%" stroke="black" style="fill:none"></circle>
+            </svg>
+        </div>
+    </div>
+</template>
+
+<script>
+    const profile_size = window.innerWidth * 0.95 * 0.082
+
+    $.getJSON('http://localhost:3000/database/stocks.json', stocks => {
+        try {
+            if (typeof stocks === 'string')
+                stocks = JSON.parse(stocksStr)
+
+            //
+            console.log(stocks)
+
+            d3.selectAll('.fordata')
+                .style('display', '')
+            d3.selectAll('.emptydata')
+                .style('display', 'none')
+
+            const saturations = []
+            const statistics = {}
+            let selected_list = []
+            const items = Object.keys(stocks)
+            const select_total_circle = d3.select('#select-total')
+
+            // for sorting ingredients
+            for (const name of items) {
+                const limit_duration = stocks[name].limit_duration
+                const durations = stocks[name].date_list.map(dateStr => Math.ceil((Date.now() - new Date(dateStr)) / (1000*3600*24)))   // in days
+                durations.sort((a, b) => b - a)
+        
+                const oldest_duration = durations[0]
+                const oldest_count = durations.filter(duration => duration === oldest_duration).length
+        
+                const saturation = durations.reduce((acc, cur) => acc + cur) / (durations.length * limit_duration)
+
+                saturations.push([name, saturation])
+                statistics[name] = {
+                    oldest_duration,
+                    oldest_count,
+                    durations
+                }
+            }
+
+            saturations.sort((a, b) => b[1] - a[1])
+
+            // make visulalization
+            for (const [name, _] of saturations) {
+                const temp = $('template')[0]
+                const clon = temp.content.cloneNode(true)
+
+                const durations = statistics[name].durations
+                const limit_duration = stocks[name].limit_duration
+
+                clon.firstElementChild.id = name
+                clon.getElementById('name').textContent = name
+                clon.getElementById('count').textContent = durations.length + '개'
+                clon.getElementById('oldest-duration-rest').textContent = 'D-' + (limit_duration - statistics[name].oldest_duration)
+                clon.getElementById('oldest-count').textContent = statistics[name].oldest_count + '개'
+
+                const img = new Image()
+                img.onload = () => {
+                    const [[x0, y0], [x1, y1]] = stocks[name].img.detectionBox
+                    const canvas = clon.getElementById('canvas')
+                    canvas.width = profile_size
+                    canvas.height = profile_size
+                    const ctx = canvas.getContext('2d')
+                    ctx.drawImage(img, x0, y0, x1-x0, y1-y0, 0, 0, profile_size, profile_size)
+
+                    $('#items-area').append(clon)
+
+                    const scale = d3.scaleLinear()
+                                        .domain([
+                                            0,
+                                            limit_duration
+                                        ])
+                                        .range([0, 100])
+                    const height = 100/durations.length
+
+                    const item = d3.select('#items-area')
+                                    .select('#'+name)
+
+                    item.select('#histogram')
+                            .selectAll('rect')
+                                .data(durations)
+                                .join(
+                                    enter => enter.append('rect')
+                                                    .attr('y', (_, i) => (height*i)+'%')
+                                                    .attr('width', d => Math.min(scale(d), 100)+'%')
+                                                    .attr('height', height+'%')
+                                                    .style('fill', d => scale(d) >= 100 ? 'red' : 'black'),
+                                    update => update
+                                                .attr('y', (_, i) => (height*i)+'%')
+                                                .attr('width', d => Math.min(scale(d), 100)+'%')
+                                                .attr('height', height+'%')
+                                                .style('fill', d => scale(d) >= 100 ? 'red' : 'black'),
+                                    exit => exit.remove()
+                                )
+                    item.select('#select')
+                            .on('mouseenter', function() {
+                                const select_circle = d3.select(this)
+                                if (!select_circle.classed('selected'))
+                                    select_circle.style('fill', 'skyblue')
+                            })
+                            .on('mouseleave', function() {
+                                const select_circle = d3.select(this)
+                                if (!select_circle.classed('selected'))
+                                    select_circle.style('fill', 'none')
+                            })
+                            .on('click', function() {
+                                const select_circle = d3.select(this)
+                                const selected = select_circle.classed('selected')
+                                select_circle.classed('selected', !selected)
+                                            .style('fill', selected ? 'none' : 'blue')
+                            
+                                if (selected) {
+                                    selected_list = selected_list.filter(e => e !== name)
+                                    select_total_circle.classed('selected', false)
+                                                    .style('fill', 'none')
+                                } else {
+                                    selected_list.push(name)
+                                    if (selected_list.length === items.length) {
+                                        select_total_circle.classed('selected', true)
+                                                        .style('fill', 'blue')
+                                    }
+                                }
+                            })
+                }
+                img.src = 'http://localhost:3000/' + stocks[name].img.src
+            }
+
+            select_total_circle
+                .on('mouseenter', function() {
+                    if (!select_total_circle.classed('selected'))
+                        select_total_circle.style('fill', 'skyblue')
+                })
+                .on('mouseleave', function() {
+                    if (!select_total_circle.classed('selected'))
+                        select_total_circle.style('fill', 'none')
+                })
+                .on('click', function() {
+                    const selected = select_total_circle.classed('selected')
+                    select_total_circle.classed('selected', !selected)
+                                    .style('fill', selected ? 'none' : 'blue')
+
+                    d3.selectAll('#select')
+                        .classed('selected', !selected)
+                        .style('fill', selected ? 'none' : 'blue')
+                    
+                    selected_list = selected ? [] : [...items]
+                })
+    
+            $('#recommend').click(() => {
+                if (selected_list.length === 0) {
+                    alert('식재료를 선택하세요!')
+                    return false
+                }
+            })
+        } catch (error) {
+            d3.selectAll('.fordata')
+                .style('display', 'none')
+            d3.selectAll('.emptydata')
+                .style('display', '')
+        }
+    })
+</script>
 
 {% endblock %}

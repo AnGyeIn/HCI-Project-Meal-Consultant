@@ -5,6 +5,8 @@ Open terminal on the directory you want to work then
 
 `git clone https://github.com/AnGyeIn/HCI_Project_Meal_Consultant.git`
 
+`cd HCI_Project_Meal_Consultant`
+
 `npm install`
 
 Then open your local server by
