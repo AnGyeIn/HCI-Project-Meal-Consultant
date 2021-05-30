@@ -19,6 +19,8 @@ package-lock.json
 hci-10-meal-consultant-19a7ab556f6f.json
 uploadedImages
 test
-database/meal_record.json
-database/stocks.json
+database/*
+!database/meal_list.json
 README.md
+dataset/*
+!dataset/data_preparation.ipynb
