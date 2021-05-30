@@ -8,8 +8,10 @@ app.listen(port, () => {
         if (!fs.existsSync(staticDir))
             fs.mkdirSync(staticDir)
 
-    if (!fs.existsSync('./database/stocks.json'))
-        fs.writeFileSync('./database/stocks.json', '')
+    const dataFiles = ['./database/stocks.json', './database/meal_record.json']
+    for (const dataFile of dataFiles)
+        if (!fs.existsSync(dataFile))
+            fs.writeFileSync(dataFile, '')
 
     console.log('Express listening on port', port)
 })

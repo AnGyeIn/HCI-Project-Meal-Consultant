@@ -6,8 +6,7 @@
 <div style="text-align:center">
     <h1>이것들이 맞나요?</h1>
     <svg width="500" height="500" id="image">
-        <image xlink:href="http://localhost:3000/{{ filedir }}/{{ filename }}"
-               width="100%" height="100%">
+        <image xlink:href="http://localhost:3000/{{ filedir }}/{{ filename }}" width="100%" height="100%">
     </svg>
     <h2>빠뜨린 식재료는 드래그해주세요.</h2>
     <h2>잘못 인식된 식재료는 클릭해서 수정해주세요.</h2>
@@ -41,17 +40,26 @@
     <tr id="tr">
         <td><canvas id="canvas"></canvas></td>
         <td><input id="name" type="text" style="width:10vw"></td>
-        <td><input id="count" type="number" style="width:3vw">개</td>
+        <td><input id="count" type="number" min="1" value="1" style="width:3vw">개</td>
         <td><input id="datepicker" type="text" style="width:10vw"></td>
         <td><button class="basic" type="button" id="cancel">X</button></td>
     </tr>
 </template>
 
 <script>
+    const label_translate = {
+        'Apple': '사과', 'Banana': '바나나', 'Chestnut': '밤', 'Corn': '옥수수', 'Cucumber': '오이', 'Dates': '대추',
+        'Eggplant': '가지', 'Grape': '포도', 'Kaki': '감', 'Mandarine': '귤', 'Onion': '양파', 'Orange': '오렌지',
+        'Pear': '배', 'Pepper': '피망', 'Potato': '감자', 'PotSweet': '고구마', 'Tomato': '토마토', 'Walnut': '호두'
+    }
     const size = 500
     const vw = window.innerWidth / 100
 
-    let scale, margin_x, margin_y, inverse_scale
+    let idx = 0
+    const svg = d3.select('svg').append('g')
+
+    let detectionBoxes = []
+    let scale, margin_x, margin_y, inverse_scale, norm_scale_x, norm_scale_y
     const img = new Image()
     img.onload = () => {
         scale = d3.scaleLinear()
@@ -62,13 +70,35 @@
         inverse_scale = d3.scaleLinear()
                             .domain([0, Math.max(img.width, img.height)])
                             .range([0, size])
+        norm_scale_x = d3.scaleLinear()
+                            .domain([0, 1])
+                            .range([0, img.width])
+        norm_scale_y = d3.scaleLinear()
+                            .domain([0, 1])
+                            .range([0, img.height])
+        
+                            
+        $.getJSON('http://localhost:3000/database/MLresponse.json', MLresponse => {
+            if (typeof MLresponse === 'string')
+                MLresponse = JSON.parse(MLresponse)
+        
+            const payload = MLresponse.payload
+            for (const {imageObjectDetection, displayName} of payload) {
+                const normalizedVertices = imageObjectDetection.boundingBox.normalizedVertices
+                const coord = []
+                for (const normCoord of normalizedVertices) {
+                    const norm_x = 'x' in normCoord ? normCoord.x : 0
+                    const norm_y = 'y' in normCoord ? normCoord.y : 0
+                    coord.push([norm_scale_x(norm_x), norm_scale_y(norm_y)])
+                }
+
+                add_detection(coord)
+                $(`input[name=name${idx-1}`).val(label_translate[displayName])
+            }
+        })
     }
     img.src = 'http://localhost:3000/{{ filedir }}/{{ filename }}'
-
-    let idx = 0
-    const svg = d3.select('svg').append('g')
-    // todo
-    let detectionBoxes = []
+    
 
     function drawDetectionBoxes() {
         svg.selectAll('rect')
@@ -93,7 +123,7 @@
                 )
     }
 
-    function add_tr(coord) {
+    function add_detection(coord) {
         const [[x0, y0], [x1, y1]] = coord
 
         const temp = $('template')[0]
@@ -123,9 +153,16 @@
             
         $('tbody').append(clon)
 
+        $(`input[name=count${idx}`).val(1)
         $('#datepicker'+idx).datepicker({
             dateFormat: "yy-mm-dd"
         })
+
+        detectionBoxes.push({
+            id: idx,
+            coord
+        })
+        drawDetectionBoxes()
 
         idx++
     }
@@ -134,12 +171,7 @@
         if (selection) {
             const [[x0, y0], [x1, y1]] = selection
             const coord = [[scale(x0)-margin_x, scale(y0)-margin_y], [scale(x1)-margin_x, scale(y1)-margin_y]]
-            detectionBoxes.push({
-                id: idx,
-                coord
-            })
-            drawDetectionBoxes()
-            add_tr(coord)
+            add_detection(coord)
         }
     }
 

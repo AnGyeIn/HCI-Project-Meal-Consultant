@@ -3,8 +3,8 @@ const nunjucks = require('nunjucks')
 const logger = require('morgan')
 
 // environment variables
-// const dotenv = require('dotenv')
-// dotenv.config()
+const dotenv = require('dotenv')
+dotenv.config()
 
 class App {
     constructor () {

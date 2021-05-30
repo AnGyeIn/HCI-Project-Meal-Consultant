@@ -1,5 +1,6 @@
 const {PredictionServiceClient} = require('@google-cloud/automl').v1
 const fs = require('fs')
+const util = require('util')
 
 exports.get_selection = (_, res) => {
     res.render('add/selection.html')
@@ -11,7 +12,6 @@ exports.get_by_text = (_, res) => {
 
 exports.post_by_text = (req, res) => {
     let stocks
-    
     try {
         stocks = JSON.parse(fs.readFileSync('database/stocks.json', 'utf-8'))
     } catch (error) {
@@ -44,49 +44,43 @@ exports.get_image_upload = (_, res) => {
 }
 
 exports.post_image_upload = async (req, res) => {
-    
     const filepath = req.file.path
-    if (filepath) {
-        const content = fs.readFileSync(filepath)
-        //
-        console.log(content)
+    
+    let content
+    if (filepath)
+        content = fs.readFileSync(filepath)
+
+    const client = new PredictionServiceClient({
+        projectId: process.env.PROJECT_ID,
+        keyFilename: process.env.KEY_FILENAME
+    })
+    
+    const MLrequest = {
+        name: client.modelPath(process.env.PROJECT_ID,
+                               process.env.LOCATION,
+                               process.env.MODEL_ID),
+        payload: {
+            image: {
+                imageBytes: content
+            }
+        }
     }
 
-    // const client = new PredictionServiceClient({
-    //     projectId: process.env.PROJECT_ID,
-    //     keyFilename: process.env.KEY_FILENAME
-    // })
+    try {
+        const [MLresponse] = await client.predict(MLrequest)
+        fs.writeFileSync('database/MLresponse.json', JSON.stringify(MLresponse), 'utf-8')
+    } catch (error) {
+        console.log(error)
+    }
 
-    // const MLrequest = {
-    //     name: client.modelPath(process.env.PROJECT_ID,
-    //                            process.env.LOCATION,
-    //                            process.env.MODEL_ID),
-    //     payload: {
-    //         image: {
-    //             imageBytes: content
-    //         }
-    //     }
-    // }
-    // const [MLresponse] = await client.predict(MLrequest)
-
-    // for (const annotationPayload of response.payload)
-    //     console.log(annotationPayload)
-
-    // res.render('add/by_image/od_check.html', {filepath: filepath})
-    res.redirect('od_check/'+filepath)
+    res.redirect('od_check/' + filepath)
 }
 
 exports.get_image_od_check = (req, res) => {
-    //
-    console.log(req.params)
-
     res.render('add/by_image/od_check.html', req.params)
 }
 
 exports.post_image_od_check = (req, res) => {
-    //
-    console.log(req.body)
-
     let stocks
     const {filedir, filename} = req.params
     const src = filedir + '/' + filename
@@ -121,7 +115,7 @@ exports.post_image_od_check = (req, res) => {
         }
     }
 
-    fs.writeFileSync('database/stocks.json', JSON.stringify(stocks),'utf-8')
+    fs.writeFileSync('database/stocks.json', JSON.stringify(stocks), 'utf-8')
 
     res.redirect('/')
 }

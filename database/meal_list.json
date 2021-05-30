@@ -1,0 +1,29 @@
+{
+    "오므라이스": {
+        "ingredients": [{
+            "name": "감자",
+            "count": 1
+        }, {
+            "name": "양파",
+            "count": 2
+        }]
+    },
+    "닭도리탕": {
+        "ingredients": [{
+            "name": "감자",
+            "count": 2
+        }, {
+            "name": "당근",
+            "count": 1
+        }]
+    },
+    "카레": {
+        "ingredients": [{
+            "name": "감자",
+            "count": 3
+        }, {
+            "name": "양파",
+            "count": 2
+        }]
+    }
+}

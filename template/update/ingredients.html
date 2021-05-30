@@ -9,21 +9,124 @@
     }
 </style>
 <div class="subwindow">
+    <h1>{{ meal_name }}</h1>
     <h1>얼마나 썼나요?</h1>
-    <table>
-        <tbody>
-            <tr>
-                <td>(식재료명) :</td>
-                <td><textarea style="width:3vw">0</textarea>개</td>
-            </tr>
-        </tbody>
-    </table>
-    <button class="basic" style="width:20%">+</button>
-    <br>
-    <p1 style="font-size:120%"><textarea style="width:3vw">0</textarea>명이 먹었어요.</p1>
-    <br>
-    <button class="basic"><a href='/'>확인</a></button>
-    <button class="basic"><a href='/'>취소</a></button>
+    <form action="" method="post">
+        <table>
+            <tbody>
+            </tbody>
+        </table>
+        <button class="basic" type="button" onclick="add_tr()" style="width:27%">+</button>
+        <br>
+        <input id="datepicker" type="text" name="meal_date" style="width:10vw; text-align:center">
+        <br>
+        <p1 style="font-size:120%"><input type="number" name="people_num" min="1" value="1" style="width:3vw">명이 먹었어요.</p1>
+
+        <input type="hidden" name="max_idx">
+
+        <br>
+        <button class="basic" id="submit">확인</button>
+        <button class="basic" type="button"><a href='/'>취소</a></button>
+    </form>
 </div>
+
+<template>
+    <tr id="tr">
+        <td><input id="name" type="text" style="width:10vw">:</td>
+        <td><input id="count" type="number" min="1" value="1" style="width:3vw">개</td>
+        <td><button class="basic" type="button" id="cancel">X</button></td>
+    </tr>
+</template>
+
+<script>
+    const meal_name = "{{ meal_name }}"
+    let meal_record
+    let idx = 0
+
+    function add_tr() {
+        const temp = $('template')[0]
+        const clon = temp.content.cloneNode(true)
+
+        clon.getElementById('tr').id = 'tr'+idx
+
+        clon.getElementById('name').name = 'name'+idx
+        clon.getElementById('count').name = 'count'+idx
+
+        const id = idx
+        clon.getElementById('cancel').onclick = function() {
+            $('#tr'+id).remove()
+        }
+
+        $('tbody').append(clon)
+
+        idx++
+    }
+
+    function set_meal_data(meal_database) {
+        if (!meal_database || !(meal_name in meal_database))
+            return false
+        
+        const {ingredients} = meal_database[meal_name]
+        for (const ingredient of ingredients) {
+            add_tr()
+            $(`input[name=name${idx-1}]`).val(ingredient.name)
+            $(`input[name=count${idx-1}]`).val(ingredient.count)
+        }
+        
+        return true
+    }
+
+    $.getJSON('http://localhost:3000/database/meal_record.json', meal_record_file => {
+        meal_record = meal_record_file
+        if (typeof meal_record === 'string')
+            meal_record = JSON.parse(meal_record)
+        if (!meal_record)
+            meal_record = {}
+        
+        if (set_meal_data(meal_record))
+            return
+        
+        $.getJSON('http://localhost:3000/database/meal_list.json', meal_list => {
+            if (typeof meal_list === 'string')
+                meal_list = JSON.parse(meal_list)
+            
+            set_meal_data(meal_list)
+        })
+    })
+
+    const date = $('#datepicker')
+    date.datepicker({
+        dateFormat: "yy-mm-dd"
+    })
+    date.val(d3.timeFormat('%Y-%m-%d')(new Date))
+    
+    $('#submit').click(() => {
+        const people_num = $('input[name=people_num]').val()
+        let name, count
+        let isEmpty = true
+        for (let i = 0; i < idx; i++) {
+            name = $(`input[name=name${i}]`).val()
+            if (name === undefined)
+                continue
+            name = name ? name.length : false
+            count = $(`input[name=count${i}]`).val()
+            count = count ? count.length : false
+
+            if (!name || !count) {
+                alert('식재료명과 개수를 모두 입력해주세요!')
+                return false
+            }
+
+            isEmpty = false
+        }
+
+        if (isEmpty) {
+            alert('식재료를 입력해주세요!')
+            return false
+        }
+
+        $('input[name=max_idx]').val(idx)
+    })
+</script>
 
 {% endblock %}

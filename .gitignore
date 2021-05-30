@@ -16,7 +16,9 @@ package-lock.json
 .env
 
 # project
-hci-meal-consultant-fae8f528b8dd.json
+hci-10-meal-consultant-19a7ab556f6f.json
 uploadedImages
 test
-dataset
+database/meal_record.json
+database/stocks.json
+README.md

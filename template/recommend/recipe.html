@@ -4,32 +4,59 @@
 {% block content %}
 
 <div class="subwindow">
-    <h1>(선택된 요리 이름)</h1>
+    <h1>{{ meal_name }}</h1>
     
-    <!--해 본 요리인 경우-->
-    <h2>이전에 이만큼 넣었어요.</h2>
+    <!--for experienced-->
+    <h2 class="exp">이전에 이만큼 넣었어요.</h2>
 
-    <!--안 해 본 요리인 경우-->
-    <h2>보통 이만큼 넣어요.</h2>
+    <!--for new-->
+    <h2 class="new">보통 이만큼 넣어요.</h2>
 
-    <div class="rect" style="width:40%; margin:auto; float:center;">
-        <!--필요한 식재료만큼 반복-->
-        <h3>(식재료명): (개수)개 / 1인분</h3>
-        <h3>...</h3>
+    <div class="rect" id="items-area" style="width:40%; margin:auto; float:center;">
     </div>
 
     <h2>참고해보세요.</h2>
     <div style="height:20vw">
         <div class="rect" style="width:30%; height:100%; float:left; margin-left:20%;">
-            <h1 style="margin-top:30%"><a href="https://www.youtube.com/results?search_query=요리법" target="_blank">(유튜브)</a></h1>
+            <h1 style="margin-top:30%"><a id="youtube" target="_blank">(유튜브)</a></h1>
         </div>
         <div class="rect" style="width:30%; height:100%; float:left;">
-            <h1 style="margin-top:30%"><a href="https://www.google.com/search?q=요리법" target="_blank">(웹)</a></h1>
+            <h1 style="margin-top:30%"><a id="web" target="_blank">(웹)</a></h1>
         </div>
     </div>
     <br>
     <button class="basic"><a href='/'>메인으로</a></button>
-    <button class="basic"><a href='/recommend/list/'>취소</a></button>
+    <button class="basic"><a href='/recommend/list'>취소</a></button>
 </div>
+
+<script>
+    const opt = '{{ opt }}'
+    const meal_name = '{{ meal_name }}'
+
+    function add_items(ingredients) {
+        const items_area = $('#items-area')
+        for (const ingredient of ingredients)
+            items_area.append(`<h3>${ingredient.name}: ${ingredient.count}개 / 1인분</h3>`)
+    }
+    
+    if (opt === 'exp') {
+        d3.select('.new').style('display', 'none')
+        $.getJSON('http://localhost:3000/database/meal_record.json', meal_record => {
+            if (typeof meal_record === 'string')
+                meal_record = JSON.parse(meal_record)
+            add_items(meal_record[meal_name].ingredients)
+        })
+    } else {
+        d3.select('.exp').style('display', 'none')
+        $.getJSON('http://localhost:3000/database/meal_list.json', meal_list => {
+            if (typeof meal_list === 'string')
+                meal_list = JSON.parse(meal_list)
+            add_items(meal_list[meal_name].ingredients)
+        })
+    }
+
+    $('#youtube').attr('href', 'https://www.youtube.com/results?search_query=' + meal_name + ' 요리법')
+    $('#web').attr('href', 'https://www.google.com/search?q=' + meal_name + ' 요리법')
+</script>
 
 {% endblock %}

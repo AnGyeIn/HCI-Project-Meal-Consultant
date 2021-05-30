@@ -4,17 +4,58 @@
 {% block content %}
 
 <div>
-    <div class="rect" style="float:left; width:50%; height:50vw; padding:1%; text-align:center;">
-        <h1>해 본 요리</h1>
-        <button class="basic" style="width:80%"><a href="/recommend/recipe">(해 본 요리 중 추천1)</a></button>
-    </div>
-    <div class="rect" style="float:left; width:50%; height:50vw; padding:1%; text-align:center;">
-        <h1>안 해 본 요리</h1>
-        <button class="basic" style="width:80%"><a href="/recommend/recipe">(안 해 본 요리 중 추천1)</a></button>
-        <button class="basic" style="width:80%"><a href="/recommend/recipe">(안 해 본 요리 중 추천2)</a></button>
-        <button class="basic" style="width:80%"><a href="/recommend/recipe">(안 해 본 요리 중 추천3)</a></button>
-    </div>
+    <form action="" method="post">
+        <div class="rect" id="exp" style="float:left; width:50%; height:50vw; padding:1%; text-align:center;">
+            <h1>해 본 요리</h1>
+            <h2 class="emptydata">아직 입력된 요리가 없어요!</h2>
+        </div>
+        <div class="rect" id="new" style="float:left; width:50%; height:50vw; padding:1%; text-align:center;">
+            <h1>안 해 본 요리</h1>
+        </div>
+        <input type="hidden" name="meal_name">
+        <input type="hidden" name="opt">
+    </form>
     <button class="basic" style="float:right"><a href='/'>취소</a></button>
 </div>
+
+<script>
+    let meal_list, meal_record
+    
+    function add_meal_button(meal_name, opt, meal_info) {
+        $('#'+opt).append(`<button class="basic" id=${meal_name} style="width:80%">${meal_name}</button>`)
+        $('#'+meal_name).click(() => {
+            $('input[name=meal_name]').val(meal_name)
+            $('input[name=opt]').val(opt)
+        })
+    }
+
+    $.getJSON('http://localhost:3000/database/meal_list.json', meal_list_file => {
+        meal_list = meal_list_file
+        if (typeof meal_list === 'string')
+            meal_list = JSON.parse(meal_list)
+        
+        $.getJSON('http://localhost:3000/database/meal_record.json', meal_record_file => {
+            meal_record = meal_record_file
+            if (typeof meal_record === 'string')
+                meal_record = JSON.parse(meal_record)
+
+            // todo
+            const recommended_exp = meal_record ? meal_record : {}
+            const recommended_new = meal_list
+            Object.keys(recommended_exp).forEach(x => delete recommended_new[x])
+
+            if (recommended_exp && Object.keys(recommended_exp).length > 0) {
+                d3.select('.emptydata')
+                    .style('display', 'none')
+                
+                for (const meal_name of Object.keys(recommended_exp))
+                    add_meal_button(meal_name, 'exp', recommended_exp[meal_name])
+            }
+
+            for (const meal_name of Object.keys(recommended_new))
+                add_meal_button(meal_name, 'new', recommended_new[meal_name])
+        })
+    })
+</script>
 
 {% endblock %}

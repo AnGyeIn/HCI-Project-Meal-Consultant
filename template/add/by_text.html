@@ -31,7 +31,7 @@
 <template>
     <tr id="tr">
         <td><input id="name" type="text" style="width:10vw"></td>
-        <td><input id="count" type="count" style="width:3vw">개</td>
+        <td><input id="count" type="count" min="1" value="1" style="width:3vw">개</td>
         <td><input id="datepicker" type="text" style="width:10vw"></td>
         <td><button class="basic" type="button" id="cancel">X</button></td>
     </tr>
@@ -68,17 +68,17 @@
     add_tr()
 
     $('#submit').click(() => {
-        let $name, $count
+        let name, count
         let isEmpty = true
         for (let i = 0; i < idx; i++) {
-            $name = $(`input[name=name${i}]`).val()
-            if ($name === undefined)
+            name = $(`input[name=name${i}]`).val()
+            if (name === undefined)
                 continue
-            $name = $name ? $name.length : false
-            $count = $(`input[name=count${i}]`).val()
-            $count = $count ? $count.length : false
+            name = name ? name.length : false
+            count = $(`input[name=count${i}]`).val()
+            count = count ? count.length : false
 
-            if (!$name || !$count) {
+            if (!name || !count) {
                 alert('식재료명과 개수를 모두 입력해주세요!')
                 return false
             }
