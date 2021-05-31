@@ -38,15 +38,14 @@ Open terminal on the directory you did `git clone` (maybe "HCI_Project_Meal_Cons
 Then openning and closing your local server is same with above.
 
 ## Project scheme
-1. If you open your local server, "uploadedimages/" and "database/" directories will be created (it there weren't),
-as well as "database/stocks.json" which is empty file at first.
+1. If you open your local server first, there will be "database/meal_list.json", and "uploadedimages/" will be created (it there weren't) as well as "database/stocks.json" and "database/meal_record.json" which are empty file at first.
 2. "uploadedimages/" is the space for the images that users will upload whlie adding ingredients by images. The images name will be randomly assigned.
 3. "database/stocks.json" is the data of ingredients that user input. The structure is below.
 ```
 ./database/stocks.json
 
 {
-  "ingredient1 name: {
+  "ingredient1 name": {
     "limit_duration": Number,                         // Maximum days the ingredient can be maintained -ex) 20
     "date_list": [Date String, ...],                  // Array of the dates user bought each ingredient instance -ex) ["2021-05-28T00:00:00.0000", ...],
     "img": {
@@ -54,11 +53,59 @@ as well as "database/stocks.json" which is empty file at first.
       "detectionBox": [[<x0>, <y0>], [<x1>, <y1>]]    // A pair of coordinates where the ingredient is placed in the "src" image file
     }
   },
-  "ingredient2 name: {
+  "ingredient2 name": {
     ...
   },
   ...
 }
 ```
-4. For now, `"limit_duration"` is just fixed for `20`. It has to vary with ingredients, but for that we need to collect data first.
-5. If user add the ingredient by text, there will be no uploaded image so that there may be error on `home` page. Hence we also have to set default images for the ingredients with no uploaded image.
+For now, `"limit_duration"` is just fixed for `20`. It has to vary with ingredients, but for that we need to collect data first.
+If user add the ingredient by text, there will be no uploaded image so that there may be error on `home` page. Hence we also have to set default images for the ingredients with no uploaded image.
+
+4. "database/meal_list.json" is the data of ingredients needed to cook each meal. The structure is blow.
+```
+./database/meal_list.json
+{
+  "meal1_name": {
+    "ingredients": [
+      {
+        "name": "ingredient1 name",   // Name of the first ingredient for the meal
+        "count": <x>                  // Number of the ingredient needed for the meal
+      },
+      {
+        "name": "ingredient2 name",
+        "count": <y>
+      },
+      ...
+    ],
+  },
+  "meal2_name": {
+    ...
+  },
+  ...
+}
+```
+5. "database/meal_record.json" is the data of ingredients needed to cook each meal that user has cooked. The structure is similar with `"database/meal_list.json"` except there is additional information `"meal_date"` for each meal. The structure is below.
+```
+./database/meal_list.json
+{
+  "meal1_name": {
+    "meal_date": Date String,         // Date when user eat the meal. I think it has to be changed as Array for multiple dates.
+    "ingredients": [
+      {
+        "name": "ingredient1 name",   // Name of the first ingredient for the meal
+        "count": <x>                  // Number of the ingredient needed for the meal
+      },
+      {
+        "name": "ingredient2 name",
+        "count": <y>
+      },
+      ...
+    ],
+  },
+  "meal2_name": {
+    ...
+  },
+  ...
+}
+```
