@@ -26,7 +26,7 @@ Then new branch named [your own branch name] is created and type in
 
 `git checkout [your own branch name]`
 
-to switch your branch from 'main' to [your own brance name].
+to switch your branch from 'main' to [your own branch name].
 
 ## To download updated code
 Open terminal on the directory you did `git clone` (maybe "HCI_Project_Meal_Consultant/") then
@@ -38,74 +38,96 @@ Open terminal on the directory you did `git clone` (maybe "HCI_Project_Meal_Cons
 Then openning and closing your local server is same with above.
 
 ## Project scheme
-1. If you open your local server first, there will be "database/meal_list.json", and "uploadedimages/" will be created (it there weren't) as well as "database/stocks.json" and "database/meal_record.json" which are empty file at first.
-2. "uploadedimages/" is the space for the images that users will upload whlie adding ingredients by images. The images name will be randomly assigned.
-3. "database/stocks.json" is the data of ingredients that user input. The structure is below.
+There are some `static files` that are needed in advance for running the program, as well as some `dynamic files` that created when the local server begins running. It is ok to remove `dynamic files` for test of new user, but `static files` have to be kept.
+
+### `static files`
+1. `database/ingredients_info.json` file has an object whose keys are names of ingredients and values are maximum days to maintain each ingredient.
+```
+./database/ingredients_info.json
+
+{
+  "ingredient1_name": Number,   // Maximum days the ingredient can be maintained
+  "ingredient2_name": Number, 
+  ...
+}
+```
+2. `database/meal_list.json` file has an object whose keys are names of meals and values are the object of information of each ingredient.
+```
+./database/meal_list.json
+
+{
+  "meal1_name": {
+    "ingredients": [                  // Array of the ingredients of the meal
+      {
+        "name": "ingredient1_name",   // Name of the first ingredient in the array
+        "count": Number               // Number of ingredient needed for the meal
+      }, {
+        "name": "ingredient2_name",   // Name of the second ingredient in the array
+        "count": Number
+      }, ...
+    ]
+  },
+  "meal2_name": {
+    "ingredients: [
+      ...
+    ]
+  },
+  ...
+}
+```
+### `dynamic files`
+1. `database/meal_record.json` file has an object whose keys are names of meals that the user has cooked and values are the object of information of the cooking.
+```
+./database/meal_record.json
+
+{
+  "meal1_name": {
+    "meal_date": "YYYY-MM-DD",        // Date when the user cooked the meal
+    "ingredients": [                  // Array of ingredients user used for cooking the meal
+      {
+        "name": "ingredient1_name",   // Name of the first ingredient in the array
+        "count": Number               // Number of ingredient needed for the meal
+      }, {
+        "name": "ingredient2_name",   // Name of the second ingredient in the array
+        "count": Number
+      }, ...
+    ],
+    "imgsrc": "img_file_path"         // Path to the image file that user uploaded on calendar
+  },
+  "meal2_name: {
+    "meal_date": "YYYY-MM-DD",
+    "ingredients": [
+      ...
+    ],
+    "imgsrc": "img_file_path"
+  },
+  ...
+}
+```
+2. `database/MLresponse.json` file has an object which is the response from the server of object detection model when the user uploaded his or her image to register ingredients to our system. You can find details of the response object from [here](https://cloud.google.com/vision/automl/object-detection/docs/predict).
+3. `database/recommended.json` file has an array of names of the meals that our system had recommended to the user. The most lately recommended meal is the first element of the list.
+```
+./database/recommended.json
+
+["meal1_name", "meal2_name", ... ]
+```
+4. `database/stocks.json` file has an object whose keys are names of ingredients that the user has registered in our system and values are the object of information of each ingredient.
 ```
 ./database/stocks.json
 
 {
-  "ingredient1 name": {
-    "limit_duration": Number,                         // Maximum days the ingredient can be maintained -ex) 20
-    "date_list": [Date String, ...],                  // Array of the dates user bought each ingredient instance -ex) ["2021-05-28T00:00:00.0000", ...],
+  "ingredient1_name": {
+    "limit_duration": Number,                 // Maximum days the ingredient can be maintained
+    "date_list": [Date String, ...],          // Array of the dates user bought each ingredient -ex) ["2021-05-28T00:00:00.0000", ...]
     "img": {
-      "src": "uploadedimages/<filename>",             // Path to the uploaded image file
-      "detectionBox": [[<x0>, <y0>], [<x1>, <y1>]]    // A pair of coordinates where the ingredient is placed in the "src" image file
+      "src": "img_file_path",                 // Path to the image file that user uploaded when he or she register the ingredient
+      "detectionBox": [[x0, y0], [x1, y1]]    // A pair of coordinates where the ingredient is placed in the "src" image file
     }
   },
-  "ingredient2 name": {
+  "ingredient2_name": {
     ...
   },
   ...
 }
 ```
-For now, `"limit_duration"` is just fixed for `20`. It has to vary with ingredients, but for that we need to collect data first.
-If user add the ingredient by text, there will be no uploaded image so that there may be error on `home` page. Hence we also have to set default images for the ingredients with no uploaded image.
-
-4. "database/meal_list.json" is the data of ingredients needed to cook each meal. The structure is blow.
-```
-./database/meal_list.json
-{
-  "meal1_name": {
-    "ingredients": [
-      {
-        "name": "ingredient1 name",   // Name of the first ingredient for the meal
-        "count": <x>                  // Number of the ingredient needed for the meal
-      },
-      {
-        "name": "ingredient2 name",
-        "count": <y>
-      },
-      ...
-    ],
-  },
-  "meal2_name": {
-    ...
-  },
-  ...
-}
-```
-5. "database/meal_record.json" is the data of ingredients needed to cook each meal that user has cooked. The structure is similar with `"database/meal_list.json"` except there is additional information `"meal_date"` for each meal. The structure is below.
-```
-./database/meal_list.json
-{
-  "meal1_name": {
-    "meal_date": Date String,         // Date when user eat the meal. I think it has to be changed as Array for multiple dates.
-    "ingredients": [
-      {
-        "name": "ingredient1 name",   // Name of the first ingredient for the meal
-        "count": <x>                  // Number of the ingredient needed for the meal
-      },
-      {
-        "name": "ingredient2 name",
-        "count": <y>
-      },
-      ...
-    ],
-  },
-  "meal2_name": {
-    ...
-  },
-  ...
-}
-```
+5. `uploadedImages` directory has image files that the user uploaded while using our system.
