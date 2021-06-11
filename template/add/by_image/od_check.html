@@ -5,44 +5,48 @@
 
 <div style="text-align:center">
     <h1>이것들이 맞나요?</h1>
-    <svg width="500" height="500" id="image">
-        <image xlink:href="http://localhost:3000/{{ filedir }}/{{ filename }}" width="100%" height="100%">
-    </svg>
+    <div style="width:40%; float:left;">
+        <svg width="500" height="500" id="image">
+            <image xlink:href="http://localhost:3000/{{ filedir }}/{{ filename }}" width="100%" height="100%">
+        </svg>
     <h2>빠뜨린 식재료는 드래그해주세요.</h2>
-    <h2>잘못 인식된 식재료는 클릭해서 수정해주세요.</h2>
-    <form action="" method="post">
-        <table>
-            <thead>
-                <tr>
-                    <th>이미지</th>
-                    <th>식재료명</th>
-                    <th>개수</th>
-                    <th>구입 날짜</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+    </div>
+    <div style="width:60%; float:left;">
+        <h2>잘못 인식된 식재료는 수정해주세요.</h2>
+        <form action="" method="post">
+            <table>
+                <thead>
+                    <tr>
+                        <th>이미지</th>
+                        <th>식재료명</th>
+                        <th>개수</th>
+                        <th>구입 날짜</th>
+                        <th>보관 가능 기간</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <input type="hidden" name="detection_boxes">
+            <input type="hidden" name="max_idx">
 
-        <input type="hidden" name="detection_boxes">
-        <input type="hidden" name="max_idx">
-
-        <button class="basic" id="submit" style="margin-left:30%">
-            다 맞아요
-        </button>
-        <button class="basic" type="button">
-            <a href='/add/selection'>취소</a>
-        </button>
-    </form>
+            <button class="basic" id="submit" style="margin-left:30%">다 맞아요</button>
+            <button class="basic" type="button" onclick="location.href='/add/selection'">취소</button>
+        </form>
+    </div>
 </div>
 
 <template>
     <tr id="tr">
-        <td><canvas id="canvas"></canvas></td>
+        <td>
+            <canvas id="canvas"></canvas>
+            <br>
+            <button class="basic" type="button" id="cancel" style="font-size:100%; margin:0;">삭제</button>
+        </td>
         <td><input id="name" type="text" style="width:10vw"></td>
-        <td><input id="count" type="number" min="1" value="1" style="width:3vw">개</td>
+        <td><input id="count" type="count" min="1" value="1" style="width:3vw">개</td>
         <td><input id="datepicker" type="text" style="width:10vw"></td>
-        <td><button class="basic" type="button" id="cancel">X</button></td>
+        <td><input id="limit_duration" type="count" min="1" style="width:4vw">일</td>
     </tr>
 </template>
 
@@ -60,141 +64,171 @@
 
     let detectionBoxes = []
     let scale, margin_x, margin_y, inverse_scale, norm_scale_x, norm_scale_y
-    const img = new Image()
-    img.onload = () => {
-        scale = d3.scaleLinear()
-                    .domain([0, size])
-                    .range([0, Math.max(img.width, img.height)])
-        margin_x = (scale(size) - img.width) / 2
-        margin_y = (scale(size) - img.height) / 2
-        inverse_scale = d3.scaleLinear()
-                            .domain([0, Math.max(img.width, img.height)])
-                            .range([0, size])
-        norm_scale_x = d3.scaleLinear()
-                            .domain([0, 1])
-                            .range([0, img.width])
-        norm_scale_y = d3.scaleLinear()
-                            .domain([0, 1])
-                            .range([0, img.height])
+    $.getJSON('http://localhost:3000/database/ingredients_info.json', ingredients_info => {
+        if (typeof ingredients_info === 'string')
+            ingredients_info = JSON.parse(ingredients_info)
         
-                            
-        $.getJSON('http://localhost:3000/database/MLresponse.json', MLresponse => {
-            if (typeof MLresponse === 'string')
-                MLresponse = JSON.parse(MLresponse)
+        const img = new Image()
+        img.onload = () => {
+            scale = d3.scaleLinear()
+                        .domain([0, size])
+                        .range([0, Math.max(img.width, img.height)])
+            margin_x = (scale(size) - img.width) / 2
+            margin_y = (scale(size) - img.height) / 2
+            inverse_scale = d3.scaleLinear()
+                                .domain([0, Math.max(img.width, img.height)])
+                                .range([0, size])
+            norm_scale_x = d3.scaleLinear()
+                                .domain([0, 1])
+                                .range([0, img.width])
+            norm_scale_y = d3.scaleLinear()
+                                .domain([0, 1])
+                                .range([0, img.height])
         
-            const payload = MLresponse.payload
-            for (const {imageObjectDetection, displayName} of payload) {
-                const normalizedVertices = imageObjectDetection.boundingBox.normalizedVertices
-                const coord = []
-                for (const normCoord of normalizedVertices) {
-                    const norm_x = 'x' in normCoord ? normCoord.x : 0
-                    const norm_y = 'y' in normCoord ? normCoord.y : 0
-                    coord.push([norm_scale_x(norm_x), norm_scale_y(norm_y)])
-                }
+            $.getJSON('http://localhost:3000/database/MLresponse.json', MLresponse => {
+                if (typeof MLresponse === 'string')
+                    MLresponse = JSON.parse(MLresponse)
+        
+                const payload = MLresponse.payload
+                for (const {imageObjectDetection, displayName} of payload) {
+                    const normalizedVertices = imageObjectDetection.boundingBox.normalizedVertices
+                    const coord = []
+                    for (const normCoord of normalizedVertices) {
+                        const norm_x = 'x' in normCoord ? normCoord.x : 0
+                        const norm_y = 'y' in normCoord ? normCoord.y : 0
+                        coord.push([norm_scale_x(norm_x), norm_scale_y(norm_y)])
+                    }
 
+                    add_detection(coord)
+                    const name = label_translate[displayName]
+                    $(`input[name=name${idx-1}`).val(name)
+                    if (name in ingredients_info)
+                        $(`input[name=limit_duration${idx-1}]`).val(ingredients_info[name])
+                }
+            })
+        }
+        img.src = 'http://localhost:3000/{{ filedir }}/{{ filename }}'
+
+        function add_detection(coord) {
+            const [[x0, y0], [x1, y1]] = coord
+
+            const temp = $('template')[0]
+            const clon = temp.content.cloneNode(true)
+
+            clon.getElementById('tr').id = 'tr'+idx
+
+            const canvas = clon.getElementById('canvas')
+            canvas.width = 5*vw
+            canvas.height = 5*vw
+            const ctx = canvas.getContext('2d')
+            ctx.drawImage(img, x0, y0, x1-x0, y1-y0, 0, 0, 5*vw, 5*vw)
+
+            clon.getElementById('name').name = 'name'+idx
+            clon.getElementById('count').name = 'count'+idx
+
+            clon.getElementById('datepicker').name = 'bought_date'+idx
+            clon.getElementById('datepicker').value = d3.timeFormat('%Y-%m-%d')(new Date)
+            clon.getElementById('datepicker').id = 'datepicker'+idx
+
+            clon.getElementById('limit_duration').name = 'limit_duration'+idx
+
+            const id = idx
+
+            clon.getElementById('cancel').onclick = function() {
+                detectionBoxes = detectionBoxes.filter(d => d.id !== id)
+                drawDetectionBoxes()
+                $('#tr'+id).remove()
+            }        
+
+            $('tbody').append(clon)
+
+            d3.select('#tr'+id)
+                .on('mouseenter', function() {
+                    d3.select('#rect'+id)
+                        .attr('stroke', 'red')
+                    d3.select(this)
+                        .style('background', '#7777')
+                })
+                .on('mouseleave', function() {
+                    d3.select('#rect'+id)
+                        .attr('stroke', 'green')
+                    d3.select(this)
+                        .style('background', '')
+                })
+
+            $(`input[name=name${id}]`).on('blur', function() {
+                const name = $(this).val()
+                if (name in ingredients_info)
+                    $(`input[name=limit_duration${id}]`).val(ingredients_info[name])
+            })
+
+            $('#datepicker'+idx).datepicker({
+                dateFormat: "yy-mm-dd"
+            })  
+
+            detectionBoxes.push({
+                id: idx,
+                coord
+            })
+            drawDetectionBoxes()
+
+            idx++
+        }
+
+        function brushed({selection}) {
+            if (selection) {
+                const [[x0, y0], [x1, y1]] = selection
+                const coord = [[scale(x0)-margin_x, scale(y0)-margin_y], [scale(x1)-margin_x, scale(y1)-margin_y]]
                 add_detection(coord)
-                $(`input[name=name${idx-1}`).val(label_translate[displayName])
             }
-        })
-    }
-    img.src = 'http://localhost:3000/{{ filedir }}/{{ filename }}'
-    
+        }
+
+        const brush = d3.brush()
+                            .extent([[0, 0], [size, size]])
+                            .on('end', brushed)
+        d3.select('#image').append('g')
+                            .attr('id', 'brush')
+                            .call(brush)
+    })
 
     function drawDetectionBoxes() {
         svg.selectAll('rect')
             .data(detectionBoxes, d => d.id)
                 .join(
                     enter => enter.append('rect')
+                                    .attr('id', d => 'rect'+d.id)
                                     .attr('x', d => inverse_scale(d.coord[0][0]+margin_x))
                                     .attr('y', d => inverse_scale(d.coord[0][1]+margin_y))
                                     .attr('width', d => inverse_scale(d.coord[1][0] - d.coord[0][0]))
                                     .attr('height', d => inverse_scale(d.coord[1][1] - d.coord[0][1]))
                                     .attr('fill', 'None')
-                                    .attr('stroke', 'red')
+                                    .attr('stroke', 'green')
                                     .attr('stroke-width', 3),
                     update => update.attr('x', d => inverse_scale(d.coord[0][0]+margin_x))
                                     .attr('y', d => inverse_scale(d.coord[0][1]+margin_y))
                                     .attr('width', d => inverse_scale(d.coord[1][0] - d.coord[0][0]))
-                                    .attr('height', d => inverse_scale(d.coord[1][1] - d.coord[0][1]))
-                                    .attr('fill', 'None')
-                                    .attr('stroke', 'red')
-                                    .attr('stroke-width', 3),
+                                    .attr('height', d => inverse_scale(d.coord[1][1] - d.coord[0][1])),
                     exit => exit.remove()
                 )
     }
 
-    function add_detection(coord) {
-        const [[x0, y0], [x1, y1]] = coord
-
-        const temp = $('template')[0]
-        const clon = temp.content.cloneNode(true)
-
-        clon.getElementById('tr').id = 'tr'+idx
-
-        const canvas = clon.getElementById('canvas')
-        canvas.width = 5*vw
-        canvas.height = 5*vw
-        const ctx = canvas.getContext('2d')
-        ctx.drawImage(img, x0, y0, x1-x0, y1-y0, 0, 0, 5*vw, 5*vw)
-
-        clon.getElementById('name').name = 'name'+idx
-        clon.getElementById('count').name = 'count'+idx
-
-        clon.getElementById('datepicker').name = 'bought_date'+idx
-        clon.getElementById('datepicker').value = d3.timeFormat('%Y-%m-%d')(new Date)
-        clon.getElementById('datepicker').id = 'datepicker'+idx
-
-        const id = idx
-        clon.getElementById('cancel').onclick = function() {
-            detectionBoxes = detectionBoxes.filter(d => d.id !== id)
-            drawDetectionBoxes()
-            $('#tr'+id).remove()
-        }
-            
-        $('tbody').append(clon)
-
-        $(`input[name=count${idx}`).val(1)
-        $('#datepicker'+idx).datepicker({
-            dateFormat: "yy-mm-dd"
-        })
-
-        detectionBoxes.push({
-            id: idx,
-            coord
-        })
-        drawDetectionBoxes()
-
-        idx++
-    }
-
-    function brushed({selection}) {
-        if (selection) {
-            const [[x0, y0], [x1, y1]] = selection
-            const coord = [[scale(x0)-margin_x, scale(y0)-margin_y], [scale(x1)-margin_x, scale(y1)-margin_y]]
-            add_detection(coord)
-        }
-    }
-
-    const brush = d3.brush()
-                        .extent([[0, 0], [size, size]])
-                        .on('end', brushed)
-    d3.select('#image').append('g')
-                        .attr('id', 'brush')
-                        .call(brush)
-    
     $('#submit').click(() => {
-        let $name, $count
+        let name, count, limit_duration
         let isEmpty = true
         for (let i = 0; i < idx; i++) {
-            $name = $(`input[name=name${i}]`).val()
-            if ($name === undefined)
+            name = $(`input[name=name${i}]`).val()
+            if (name === undefined)
                 continue
-            $name = $name ? $name.length : false
-            $count = $(`input[name=count${i}]`).val()
-            $count = $count ? $count.length : false
+            name = name ? name.length : false
 
-            if (!$name || !$count) {
-                alert('식재료명과 개수를 모두 입력해주세요!')
+            count = $(`input[name=count${i}]`).val()
+            count = count ? count.length : false
+
+            limit_duration = $(`input[name=limit_duration${i}]`).val()
+            limit_duration = limit_duration ? limit_duration.length : false
+
+            if (!name || !count || !limit_duration) {
+                alert('식재료명, 개수, 보관 가능 기간을 모두 입력해주세요!')
                 return false
             }
 

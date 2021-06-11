@@ -5,19 +5,48 @@
 
 <div style="text-align:center">
     <h1>어떤 요리를 했나요?</h1>
+    <select id="meal_name_select" style="font-size:120%; margin:10px;">
+    </select>
     <form action="" method="post">
-        <input type="text" name="meal_name" placeholder="요리명" style="width:30%">
+        <input type="text" name="meal_name" id="meal_name_text" placeholder="요리명" style="font-size:120%; display:none;">
         <br>
         <button class="basic" id="submit">확인</button>
-        <button class="basic" type="button"><a href='/'>취소</a></button>
+        <button class="basic" type="button" onclick="location.href='/'">취소</button>
     </form>
 </div>
 
 <script>
+    $.getJSON('http://localhost:3000/database/recommended.json', recommended => {
+        if (typeof recommended === 'string')
+            recommended = JSON.parse(recommended)
+        
+        if (!recommended || recommended.length === 0) {
+            $('#meal_name_select').css('display', 'none')
+            $('#meal_name_text').css('display', '')
+        } else {
+            const meal_name_select = $('#meal_name_select')
+            for (const meal_name of recommended)
+                meal_name_select.append(`<option value="${meal_name}">${meal_name}</option>`)
+            meal_name_select.append('<option id="self">직접 입력</option>')
+
+            const meal_name_text = $('#meal_name_text')
+            meal_name_text.attr('value', meal_name_select.find('option:selected').val())
+
+            meal_name_select.on('change', event => {
+                if (event.target.value === '직접 입력')
+                    meal_name_text.css('display', '')
+                else {
+                    meal_name_text.css('display', 'none')
+                    meal_name_text.attr('value', event.target.value)
+                }
+            })
+        }
+    })
+
     $('#submit').click(() => {
         const meal_name = $('input[name=meal_name]').val()
         if (!meal_name || meal_name.length === 0) {
-            alert('요리명을 입력해주세요!')
+            alert('요리명을 선택 또는 입력해주세요!')
             return false
         }
     })

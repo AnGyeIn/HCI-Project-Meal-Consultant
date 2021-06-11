@@ -5,14 +5,32 @@
 
 <div class="subwindow">
     <h1>식재료 입력 방식을 선택해주세요.</h1>
-    <div class="rect" style="width:30%; height:30vw; float:left; margin-left:17.5%; margin-right:5%; text-align:center;">
-        <h1 style="margin-top:45%"><a href="/add/by_image/upload">이미지</a></h1>
+    <div class="rect" style="width:30%; height:30vw; float:left; margin-left:17.5%; margin-right:5%;
+    text-align:center;" onclick="location.href='/add/by_image/upload'">
+        <svg width="100%" height="80%">
+            <image xlink:href="http://localhost:3000/src/camera.png" width="100%" height="100%"></image>
+        </svg>
+        <h1>이미지</h1>
     </div>
-    <div class="rect" style="width:30%; height:30vw; float:left; text-align:center; margin-right:17.5%;">
-        <h1 style="margin-top:45%"><a href="/add/by_text">텍스트</a></h1>
+    <div class="rect" style="width:30%; height:30vw; float:left; text-align:center; margin-right:17.5%;"
+    onclick="location.href='/add/by_text'">
+        <svg width="100%" height="80%" style="padding-top:20%">
+            <image xlink:href="http://localhost:3000/src/text.png" width="100%" height="60%"></image>
+        </svg>
+        <h1>텍스트</h1>
     </div>
     <br>
     <button class="basic" style="float:right; margin-right:17.5%;"><a href="/">취소</a></button>
 </div>
+
+<script>
+    $('div.rect')
+        .on('mouseenter', function() {
+            $(this).css('background', '#cccccc')
+        })
+        .on('mouseleave', function() {
+            $(this).css('background', 'none')
+        })
+</script>
 
 {% endblock %}

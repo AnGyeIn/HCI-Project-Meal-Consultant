@@ -3,10 +3,129 @@
 
 {% block content %}
 
+<style>
+    td {
+        width: 14.3vw;
+        height: 8vw;
+        padding: 10px;
+        text-align: left;
+        font-size: 80%;
+    }
+</style>
+
 <div class="subwindow">
-    <p>(캘린더 - 월력)</p>
-    <p><a href='/calendar/photo'>(사용자가 기록한 특정 요리)</a></p>
-    <button class="basic"><a href='/'>메인으로</a></button>
+    <div>
+        <div style="width:10%; float:left; padding-top:1.5%;">
+            <button id="prev" style="font-size:200%"></button>
+        </div>
+        <div style="width:80%; float:left;">
+            <h1 id="month"></h1>
+        </div>
+        <div style="width:10%; float:left; padding-top:1.5%;">
+            <button id="next" style="font-size:200%"></button>
+        </div>
+    </div>
+    <table style="width:100%">
+        <thead style="background:#cccccc">
+            <tr>
+                <th style="color:red">일</th>
+                <th>월</th>
+                <th>화</th>
+                <th>수</th>
+                <th>목</th>
+                <th>금</th>
+                <th style="color:blue">토</th>
+                </tr>
+            </thead>
+        <tbody id="calendar" style="text-align:left">
+        </tbody>
+    </table>
+
+    <button class="basic" onclick="location.href='/'">메인으로</button>
 </div>
+
+<script>
+    const monthDates = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    const calendar = $('#calendar')
+    
+    function draw_monthly(year, month, meal_record) {
+        const date_obj = new Date()
+        date_obj.setFullYear(year)
+        date_obj.setMonth(month)
+        date_obj.setDate(1)
+        if ((year % 400 === 0) || ((year % 4 === 0) && (year % 100 !== 0)))
+            monthDates[1] = 29
+        else
+            monthDates[1] = 28
+
+        const prev = new Date(date_obj)
+        prev.setMonth(month-1)
+        
+        const next = new Date(date_obj)
+        next.setMonth(month+1)
+
+        $('#month').text(`${year}년 ${month+1}월`)
+        $('#prev')
+            .text((prev.getMonth()+1) + '월')
+            .click(function() {
+                draw_monthly(prev.getFullYear(), prev.getMonth(), meal_record)
+            })
+        $('#next')
+            .text((next.getMonth()+1) + '월')
+            .click(function() {
+                draw_monthly(next.getFullYear(), next.getMonth(), meal_record)
+            })
+        
+        const firstDay = date_obj.getDay()
+        let td_nums = firstDay + monthDates[month]
+        const remain = td_nums % 7
+        if (remain)
+            td_nums += 7 - remain
+        
+        calendar.empty()
+        let week
+        for (let i = 0; i < td_nums; i++) {
+            if (i % 7 === 0) {
+                calendar.append('<tr></tr>')
+                week = calendar.last('tr')
+            }
+
+            const date = i - firstDay + 1
+            if (date < 1 || date > monthDates[month])
+                week.append('<td></td>')
+            else {
+                date_obj.setDate(date)
+                week.append(`
+                    <td>
+                        <div style="height:30%">
+                            <p ${i % 7 === 0 ? 'style="color:red"' : i % 7 === 6 ? 'style="color:blue"' : ''}>${date}</p>
+                        </div>
+                        <div id="${d3.timeFormat('%Y-%m-%d')(date_obj)}" style="height:70%"></div>
+                    </td>
+                `)
+            }
+        }
+
+        if (meal_record)
+            for (const meal_name of Object.keys(meal_record)) {
+                const info = meal_record[meal_name]
+                $('#'+info['meal_date']).append(`
+                    <p><a href="/calendar/photo/${meal_name}">${meal_name}</a></p>
+                `)
+            }
+    }
+
+    $.getJSON('http://localhost:3000/database/meal_record.json', meal_record => {
+        try {
+            if (typeof meal_record === 'string')
+                meal_record = JSON.parse(meal_record)
+
+            const today = new Date()
+            draw_monthly(today.getFullYear(), today.getMonth(), meal_record)
+        } catch (error) {
+            console.log(error)
+        }
+    })
+</script>
 
 {% endblock %}

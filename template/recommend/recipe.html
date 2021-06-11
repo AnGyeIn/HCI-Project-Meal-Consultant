@@ -17,16 +17,22 @@
 
     <h2>참고해보세요.</h2>
     <div style="height:20vw">
-        <div class="rect" style="width:30%; height:100%; float:left; margin-left:20%;">
-            <h1 style="margin-top:30%"><a id="youtube" target="_blank">(유튜브)</a></h1>
+        <div class="rect button" id="youtube" style="width:30%; height:100%; float:left; margin-left:20%;">
+            <svg width="100%" height="60%" style="margin-top:8%">
+                <image xlink:href="http://localhost:3000/src/yt_icon_rgb.png" width="100%" height="100%"></image>
+            </svg>
+            <h1>유튜브</h1>
         </div>
-        <div class="rect" style="width:30%; height:100%; float:left;">
-            <h1 style="margin-top:30%"><a id="web" target="_blank">(웹)</a></h1>
+        <div class="rect button" id="web" style="width:30%; height:100%; float:left;">
+            <svg width="100%" height="60%" style="margin-top:8%">
+                <image xlink:href="http://localhost:3000/src/web.png" width="100%" height="100%"></image>
+            </svg>
+            <h1>웹</h1>
         </div>
     </div>
     <br>
-    <button class="basic"><a href='/'>메인으로</a></button>
-    <button class="basic"><a href='/recommend/list'>취소</a></button>
+    <button class="basic" onclick="location.href='/'">메인으로</button>
+    <button class="basic" onclick="history.back()">뒤로가기</button>
 </div>
 
 <script>
@@ -55,8 +61,18 @@
         })
     }
 
-    $('#youtube').attr('href', 'https://www.youtube.com/results?search_query=' + meal_name + ' 요리법')
-    $('#web').attr('href', 'https://www.google.com/search?q=' + meal_name + ' 요리법')
+    $('#youtube')
+        .attr('onclick', `window.open('about:blank').location.href='https://www.youtube.com/results?search_query=${meal_name} 요리법'`)
+    $('#web')
+        .attr('onclick', `window.open('about:blank').location.href='https://www.google.com/search?q=${meal_name} 요리법'`)
+    
+    $('div.button')
+        .on('mouseenter', function() {
+            $(this).css('background', '#cccccc')
+        })
+        .on('mouseleave', function() {
+            $(this).css('background', 'none')
+        })
 </script>
 
 {% endblock %}

@@ -16,8 +16,6 @@ class App {
 
         this.setStatic()
 
-        this.setLocals()
-
         this.getRouting()
 
         // 404 not found
@@ -34,36 +32,13 @@ class App {
         this.app.use('/test', express.static('test'))
         this.app.use('/uploadedImages', express.static('uploadedImages'))
         this.app.use('/database', express.static('database'))
+        this.app.use('/src', express.static('src'))
     }
 
     setViewEngine () {
         nunjucks.configure('template', {
             autoescape: true,
             express: this.app
-        })
-    }
-
-    setLocals() {
-        this.app.use((req, res, next) => {
-            // test
-            // this.app.locals.stocks = JSON.stringify([
-            //     {
-            //         name: '감자',
-            //         limit_duration: 20,
-            //         bought_date: Date()
-            //     },
-            //     {
-            //         name: '감자',
-            //         limit_duration: 20,
-            //         bougth_date: Date()
-            //     },
-            //     {
-            //         name: '옥수수',
-            //         limit_duration: 30,
-            //         bougth_date: Date()
-            //     }
-            // ])
-            next()
         })
     }
 

@@ -12,19 +12,20 @@
                     <th>식재료명</th>
                     <th>개수</th>
                     <th>구입 날짜</th>
+                    <th>보관 가능 기간</th>
                 </tr>
             </thead>
             <tbody>
             </tbody>
         </table>
     
-        <button class="basic" type="button" onclick="add_tr()" style="padding-left:21%; padding-right:21%;">+</button>
+        <button class="basic" id="add" type="button" style="padding-left:25%; padding-right:25%;">식재료 추가</button>
 
         <input type="hidden" name="max_idx">
 
         <br>
         <button class="basic" id="submit" style="margin-left:25%;">확인</button>
-        <button class="basic" type="button"><a href="/add/selection">취소</a></button>
+        <button class="basic" type="button" onclick="location.href='/add/selection'">취소</button>
     </form>
 </div>
 
@@ -33,13 +34,14 @@
         <td><input id="name" type="text" style="width:10vw"></td>
         <td><input id="count" type="count" min="1" value="1" style="width:3vw">개</td>
         <td><input id="datepicker" type="text" style="width:10vw"></td>
-        <td><button class="basic" type="button" id="cancel">X</button></td>
+        <td><input id="limit_duration" type="count" min="1" style="width:4vw">일</td>
+        <td><button class="basic" type="button" id="cancel" style="font-size:100%; margin:0;">삭제</button></td>
     </tr>
 </template>
 
 <script>
     let idx = 0
-    function add_tr() {
+    function add_tr(ingredients_info) {
         const temp = $('template')[0]
         const clon = temp.content.cloneNode(true)
 
@@ -52,6 +54,8 @@
         clon.getElementById('datepicker').value = d3.timeFormat('%Y-%m-%d')(new Date)
         clon.getElementById('datepicker').id = 'datepicker'+idx
 
+        clon.getElementById('limit_duration').name = 'limit_duration'+idx
+
         const id = idx
         clon.getElementById('cancel').onclick = function() {
             $('#tr'+id).remove()
@@ -59,27 +63,48 @@
         
         $('tbody').append(clon)
 
-        $('#datepicker'+idx).datepicker({
+        $(`input[name=name${id}]`).on('blur', function() {
+            const name = $(this).val()
+            if (name in ingredients_info)
+                $(`input[name=limit_duration${id}]`).val(ingredients_info[name])
+        })
+
+        $('#datepicker'+id).datepicker({
             dateFormat: "yy-mm-dd"
         })
 
         idx++
     }
-    add_tr()
+    
+    $.getJSON('http://localhost:3000/database/ingredients_info.json', ingredeints_info => {
+        if (typeof ingredients_info === 'string')
+            ingredients_info = JSON.parse(ingredeints_info)
+
+        $('#add').click(function() {
+            add_tr(ingredeints_info)
+        })
+
+        add_tr(ingredeints_info)
+    })
+
 
     $('#submit').click(() => {
-        let name, count
+        let name, count, limit_duration
         let isEmpty = true
         for (let i = 0; i < idx; i++) {
             name = $(`input[name=name${i}]`).val()
             if (name === undefined)
                 continue
             name = name ? name.length : false
+            
             count = $(`input[name=count${i}]`).val()
             count = count ? count.length : false
 
-            if (!name || !count) {
-                alert('식재료명과 개수를 모두 입력해주세요!')
+            limit_duration = $(`input[name=limit_duration${i}]`).val()
+            limit_duration = limit_duration ? limit_duration.length : false
+
+            if (!name || !count || !limit_duration) {
+                alert('식재료명, 개수, 보관 가능 기간을 모두 입력해주세요!')
                 return false
             }
 

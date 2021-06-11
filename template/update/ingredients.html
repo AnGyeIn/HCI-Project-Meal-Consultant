@@ -16,9 +16,9 @@
             <tbody>
             </tbody>
         </table>
-        <button class="basic" type="button" onclick="add_tr()" style="width:27%">+</button>
+        <button class="basic" type="button" onclick="add_tr()" style="width:27%">식재료 추가</button>
         <br>
-        <input id="datepicker" type="text" name="meal_date" style="width:10vw; text-align:center">
+        <input id="datepicker" type="text" name="meal_date" style="width:10vw; text-align:center; font-size:120%; margin:10px;">
         <br>
         <p1 style="font-size:120%"><input type="number" name="people_num" min="1" value="1" style="width:3vw">명이 먹었어요.</p1>
 
@@ -26,7 +26,7 @@
 
         <br>
         <button class="basic" id="submit">확인</button>
-        <button class="basic" type="button"><a href='/'>취소</a></button>
+        <button class="basic" type="button" onclick="location.href='/'">취소</button>
     </form>
 </div>
 
@@ -34,7 +34,7 @@
     <tr id="tr">
         <td><input id="name" type="text" style="width:10vw">:</td>
         <td><input id="count" type="number" min="1" value="1" style="width:3vw">개</td>
-        <td><button class="basic" type="button" id="cancel">X</button></td>
+        <td><button class="basic" type="button" id="cancel" style="font-size:100%; margin:0;">삭제</button></td>
     </tr>
 </template>
 
@@ -126,6 +126,8 @@
         }
 
         $('input[name=max_idx]').val(idx)
+
+        sessionStorage.setItem('updated', true)
     })
 </script>
 

@@ -4,20 +4,30 @@
 {% block content %}
 
 <div class="subwindow">
+    <div class="stable">
     <h1>이미지를 업로드해주세요.</h1>
     <form action="" enctype="multipart/form-data" method="post" style="font-size:120%">
         <input type="file" name="attachment" style="margin: 1% auto 1% auto">
         <button id="upload" type="submit">업로드</button>
-        <button><a href="/add/selection">취소</a></button>
+        <button type="button" onclick="location.href='/add/selection'">취소</button>
     </form>
+    </div>
+    <div class="loading" style="display:none">
+        <h1>이미지 분석 중...</h1>
+        <h1>잠시만 기다려 주세요.</h1>
+    </div>
 </div>
+
 <script>
     $('#upload').click(() => {
-        const $attachment = $('input[name=attachment]')
-        if (!$attachment.val()) {
-            alert('이미지 파일을 선택하세요.')
+        const attachment = $('input[name=attachment]')
+        if (!attachment.val()) {
+            alert("'파일 선택' 버튼을 눌러서 이미지 파일을 선택해주세요.")
             return false
         }
+
+        $('div.stable').css('display', 'none')
+        $('div.loading').css('display', '')
     })
 </script>
 

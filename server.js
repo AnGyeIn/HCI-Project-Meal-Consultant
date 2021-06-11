@@ -8,7 +8,7 @@ app.listen(port, () => {
         if (!fs.existsSync(staticDir))
             fs.mkdirSync(staticDir)
 
-    const dataFiles = ['./database/stocks.json', './database/meal_record.json']
+    const dataFiles = ['./database/stocks.json', './database/meal_record.json', './database/recommended.json']
     for (const dataFile of dataFiles)
         if (!fs.existsSync(dataFile))
             fs.writeFileSync(dataFile, '')

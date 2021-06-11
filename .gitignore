@@ -19,8 +19,10 @@ package-lock.json
 hci-10-meal-consultant-19a7ab556f6f.json
 uploadedImages
 test
-database/*
-!database/meal_list.json
+database/meal_record.json
+database/MLresponse.json
+database/recommended.json
+database/stocks.json
+dataset/fruits-360
+dataset/fruits-360.zip
 README.md
-dataset/*
-!dataset/data_preparation.ipynb

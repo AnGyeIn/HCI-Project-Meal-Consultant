@@ -4,13 +4,76 @@
 {% block content %}
 
 <div class="subwindow">
-    <h1>(날짜)</h1>
-    <button class="basic">+</button>
-    <h2>요리명 : (해당 요리 이름)</h2>
-    <h3>재료 : (해당 재료 목록)</h3>
+    <h1 id="date"></h1>
+    
+    <form action="" enctype="multipart/form-data" method="post">
+        <input type="file" name="attachment" style="margin:0 auto 0 auto">
+        <button id="upload">업로드</button>
+    </form>
+    <div id="photo-area">
+        <h2 id="no-photo">인증샷을 추가해보세요.</h2>
+    </div>
+    
+    <h2 id="meal_name"></h2>
+    <h3>재료</h3>
+    <div id="ingredients"></div>
 
-    <button class="basic"><a href='/calendar/monthly'>확인</a></button>
-    <button class="basic"><a href='/calendar/monthly'>취소</a></button>
+    <button class="basic" onclick="location.href='/calendar/monthly'">닫기</button>
 </div>
+
+<script>
+    const meal_name = '{{ meal_name }}'
+    const size = 500
+    let img_exists = false
+    $.getJSON('http://localhost:3000/database/meal_record.json', meal_record => {
+        try {
+            if (typeof meal_record === 'string')
+                meal_record = JSON.parse(meal_record)
+            
+            const meal_info = meal_record[meal_name]
+            $('#date').text(meal_info['meal_date'])
+            $('#meal_name').text('요리명 : ' + meal_name)
+
+            const imgsrc = meal_info['imgsrc']
+            if (imgsrc && imgsrc.length > 0) {
+                $('#no-photo').css('display', 'none')
+                $('#photo-area').append('<canvas>')
+                const img = new Image()
+                img.onload = () => {
+                    const canvas = $('canvas')[0]
+                    const scale = d3.scaleLinear()
+                                        .domain([0, Math.max(img.width, img.height)])
+                                        .range([0, size])
+                    canvas.width = scale(img.width)
+                    canvas.height = scale(img.height)
+                    canvas.getContext('2d')
+                            .drawImage(img, 0, 0, img.width, img.height, 0, 0, scale(img.width), scale(img.height))
+                    
+                    $('#upload').text('업로드(새로운 이미지)')
+                    img_exists = true
+                }
+                img.src = 'http://localhost:3000/' + imgsrc
+            }
+
+            const ingredients_area = $('#ingredients')
+            for (const ingredient of meal_info['ingredients']) {
+                ingredients_area.append(`<h3>${ingredient['name']} : ${ingredient['count']}개</h3>`)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    })
+
+    $('#upload').click(() => {
+        const attachment = $('input[name=attachment]')
+        if (!attachment.val()) {
+            alert("'파일 선택' 버튼을 눌러서 이미지 파일을 선택해주세요.")
+            return false
+        }
+
+        if (img_exists)
+            return confirm("새로운 인증샷을 업로드하시겠습니까?\n(새로운 인증샷을 업로드하시면 기존의 인증샷은 더 이상 노출되지 않습니다.)")
+    })
+</script>
 
 {% endblock %}

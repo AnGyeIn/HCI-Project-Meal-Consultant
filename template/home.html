@@ -4,27 +4,31 @@
 {% block content %}
 
 <div>
-    <div style="height:7vw">
-        <div style="float:left; width:70%; height:100%; padding-top:3%;">
-            <p1 style="font-size:200%; margin:1%;">우리 집 식재료</p1>
-            <button class="basic"><a href="/add/selection">추가</a></button>
-            <button class="basic fordata"><a href="/calendar/monthly">5월</a></button>
+    <form action="" method="post">
+        <div style="height:7vw">
+            <div style="float:left; width:70%; height:100%; padding-top:3%;">
+                <p1 style="font-size:200%; margin:1%;">우리 집 식재료</p1>
+                <button class="basic" type="button" onclick="location.href='/add/selection'">추가</button>
+                <button class="basic" type="button" id="calendar" onclick="location.href='/calendar/monthly'">5월</button>
+            </div>
+            <div class="fordata" style="float:right; width:30%; height:100%; text-align:center;">
+                <h3>사용할 재료 선택</h3>
+                <p1 style="font-size:130%;">전체</p1>
+                <input type="checkbox" id="select-total" style="width:10%; height:20%;">
+            </div>
         </div>
-        <div class="fordata" style="float:right; width:30%; height:100%; text-align:center;">
-            <h3>사용할 재료 선택</h3>
-            <p1 style="font-size:130%;">전체</p1>
-            <svg width="6%" height="28%">
-                <circle id="select-total" r="45%" cx="50%" cy="50%" stroke="black" style="fill:none"></circle>
-            </svg>
-        </div>
-    </div>
 
-    <div id="items-area" class="rect" style="width:95%; margin:1% auto auto auto; text-align:center;">
-        <h1 class="emptydata">입력된 식재료가 없습니다. 가지고 계신 식재료를 추가해보세요!</h1>
-        <a class="emptydata" style="font-size:400%" href="/add/selection">+</a>
-    </div>
-    <button class="basic fordata" style="margin-left:72%"><a href='/update/mealname'>요리했어요</a></button>
-    <button class="basic fordata" id="recommend"><a href='/recommend/list'>요리 추천</a></button>
+        <div id="items-area" class="rect" style="width:95%; margin:1% auto auto auto; text-align:center; background:#eeeeee">
+            <h1 class="emptydata">입력된 식재료가 없습니다. 가지고 계신 식재료를 추가해보세요!</h1>
+            <a class="emptydata" style="font-size:400%" href="/add/selection">+</a>
+
+            <div class="fordata" style="width:65%; margin-left:12.7%;">
+                <h3>보관 기간</h3>
+            </div>
+        </div>
+        <button class="basic fordata" type="button" style="margin-left:72%" onclick="location.href='/update/mealname'">요리했어요</button>
+        <button class="basic fordata" type="submit" id="recommend">요리 추천</button>
+    </form>
 </div>
 
 <template>
@@ -33,27 +37,28 @@
             <canvas id="canvas" style="margin-top:13%"></canvas>
             <h4 id="name"><!--name of the ingredients--></h4>
         </div>
-        <div style="width:3%; height:100%; float:left; text-align:center; padding-top:6%">
+        <div style="width:3%; height:100%; float:left; text-align:center; padding-top:6%;">
             <h4 id="count"><!--total number of the ingredients-->개</h4>
         </div>
         <div class="rect" style="width:65%; height:60%; float:left; margin-top:1%;">
             <svg id="histogram" width="100%" height="100%"></svg>
         </div>
-        <div style="width:6%; height:100%; float:left; text-align:center; padding-top:2%">
+        <div style="width:6%; height:100%; float:left; text-align:center; padding-top:2%;">
             <h4 id="oldest-duration-rest">D-<!--left days for the oldest ingredients--></h4>
             <h4 id="oldest-count"><!--number of the oldest ingredients-->개</h4>
         </div>
-        <div style="width:6%; height:100%; float:left;">
-            <svg width="100%" height="100%">
-                <circle id="select" r="20%" cx="50%" cy="40%" stroke="black" style="fill:none"></circle>
-            </svg>
+        <div style="width:6%; height:100%; float:left; padding-top:2%;">
+            <input type="checkbox" id="select" name="ingredients" style="width:50%; height:50%;">
         </div>
     </div>
 </template>
 
 <script>
     const profile_size = window.innerWidth * 0.95 * 0.082
-    function add_item(clon, limit_duration, durations, name, selected_list, select_total_circle) {
+
+    $('#calendar').text(((new Date()).getMonth() + 1) + '월')
+
+    function add_item(clon, limit_duration, durations, name, selected_list, items, select_total) {
         $('#items-area').append(clon)
 
         const scale = d3.scaleLinear()
@@ -65,6 +70,7 @@
                         .select('#'+name)
 
         item.select('#histogram')
+                .style('background', '#dddddd')
                 .selectAll('rect')
                 .data(durations)
                 .join(
@@ -72,7 +78,7 @@
                                         .attr('y', (_, i) => (height*i)+'%')
                                         .attr('width', d => Math.min(scale(d), 100)+'%')
                                         .attr('height', height+'%')
-                                        .style('fill', d => scale(d) >= 100 ? 'red' : 'black'),
+                                        .style('fill', d => scale(d) >= 100 ? 'red' : '#407ef2'),
                         update => update
                                     .attr('y', (_, i) => (height*i)+'%')
                                     .attr('width', d => Math.min(scale(d), 100)+'%')
@@ -80,44 +86,25 @@
                                     .style('fill', d => scale(d) >= 100 ? 'red' : 'black'),
                         exit => exit.remove()
                     )
-        item.select('#select')
-                .on('mouseenter', function() {
-                    const select_circle = d3.select(this)
-                    if (!select_circle.classed('selected'))
-                        select_circle.style('fill', 'skyblue')
-                })
-                .on('mouseleave', function() {
-                    const select_circle = d3.select(this)
-                    if (!select_circle.classed('selected'))
-                        select_circle.style('fill', 'none')
-                })
-                .on('click', function() {
-                    const select_circle = d3.select(this)
-                    const selected = select_circle.classed('selected')
-                    select_circle.classed('selected', !selected)
-                                    .style('fill', selected ? 'none' : 'blue')
-    
-                    if (selected) {
-                        selected_list = selected_list.filter(e => e !== name)
-                        select_total_circle.classed('selected', false)
-                                            .style('fill', 'none')
-                    } else {
-                        selected_list.push(name)
-                        if (selected_list.length === items.length) {
-                            select_total_circle.classed('selected', true)
-                                                .style('fill', 'blue')
-                        }
-                    }
-                })
-        }
+        const checkbox = $('#select-'+name)
+        checkbox.attr('value', name)
+        checkbox.click(() => {
+            const isChecked = checkbox.prop('checked')
+            if (isChecked) {
+                selected_list.push(name)
+                if (selected_list.length === items.length)
+                    select_total.prop('checked', true)
+            } else {
+                selected_list = selected_list.filter(e => e !== name)
+                select_total.prop('checked', false)
+            }
+        })
+    }
 
     $.getJSON('http://localhost:3000/database/stocks.json', stocks => {
         try {
             if (typeof stocks === 'string')
                 stocks = JSON.parse(stocksStr)
-
-            //
-            console.log(stocks)
 
             d3.selectAll('.fordata')
                 .style('display', '')
@@ -128,7 +115,7 @@
             const statistics = {}
             let selected_list = []
             const items = Object.keys(stocks)
-            const select_total_circle = d3.select('#select-total')
+            const select_total = $('#select-total')
 
             // for sorting ingredients
             for (const name of items) {
@@ -166,10 +153,13 @@
                 clon.getElementById('count').textContent = durations.length + '개'
                 clon.getElementById('oldest-duration-rest').textContent = 'D-' + (limit_duration - statistics[name].oldest_duration)
                 clon.getElementById('oldest-count').textContent = statistics[name].oldest_count + '개'
+                clon.getElementById('select').id = 'select-'+name
 
                 const canvas = clon.getElementById('canvas')
                 canvas.width = profile_size
                 canvas.height = profile_size
+
+                add_item(clon, limit_duration, durations, name, selected_list, items, select_total)
 
                 if (stocks[name].img) {
                     const img = new Image()
@@ -177,48 +167,44 @@
                         const [[x0, y0], [x1, y1]] = stocks[name].img.detectionBox
                         const ctx = canvas.getContext('2d')
                         ctx.drawImage(img, x0, y0, x1-x0, y1-y0, 0, 0, profile_size, profile_size)
-
-                        add_item(clon, limit_duration, durations, name, selected_list, select_total_circle)
                     }
                     img.src = 'http://localhost:3000/' + stocks[name].img.src
-                } else
-                    add_item(clon, limit_duration, durations, name, selected_list, select_total_circle)
+                }
             }
 
-            select_total_circle
-                .on('mouseenter', function() {
-                    if (!select_total_circle.classed('selected'))
-                        select_total_circle.style('fill', 'skyblue')
-                })
-                .on('mouseleave', function() {
-                    if (!select_total_circle.classed('selected'))
-                        select_total_circle.style('fill', 'none')
-                })
-                .on('click', function() {
-                    const selected = select_total_circle.classed('selected')
-                    select_total_circle.classed('selected', !selected)
-                                    .style('fill', selected ? 'none' : 'blue')
-
-                    d3.selectAll('#select')
-                        .classed('selected', !selected)
-                        .style('fill', selected ? 'none' : 'blue')
-                    
-                    selected_list = selected ? [] : [...items]
-                })
+            select_total.click(() => {
+                const isChecked = select_total.prop('checked')
+                $('input:checkbox').prop('checked', isChecked)
+                selected_list = isChecked ? [...items] : []
+            })
     
             $('#recommend').click(() => {
                 if (selected_list.length === 0) {
                     alert('식재료를 선택하세요!')
                     return false
                 }
+                sessionStorage.setItem('recommended', true)
             })
         } catch (error) {
+            console.log(error)
+
             d3.selectAll('.fordata')
                 .style('display', 'none')
             d3.selectAll('.emptydata')
                 .style('display', '')
         }
     })
+
+    const recommended = sessionStorage.getItem('recommended')
+    const updated = sessionStorage.getItem('updated')
+    if (recommended && JSON.parse(recommended)) {
+        alert("최근에 요리를 추천 받으셨네요! 맛있게 식사 하셨다면\n'요리했어요'를 눌러보세요!")
+        sessionStorage.removeItem('recommended')
+    } else if (updated && JSON.parse(updated)) {
+        const month = (new Date()).getMonth() + 1
+        alert(`새로 등록된 요리 기록이 있습니다.\n'${month}월' 버튼을 눌러서 확인하고 인증샷을 추가할 수 있습니다!`)
+        sessionStorage.removeItem('updated')
+    }
 </script>
 
 {% endblock %}

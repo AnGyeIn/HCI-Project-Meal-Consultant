@@ -15,11 +15,13 @@
         <input type="hidden" name="meal_name">
         <input type="hidden" name="opt">
     </form>
-    <button class="basic" style="float:right"><a href='/'>취소</a></button>
+    <button class="basic" style="float:right" onclick="location.href='/'">취소</button>
 </div>
 
 <script>
     let meal_list, meal_record
+    const ingredientsStr = '{{ ingredientsStr }}'
+    const ingredients = ingredientsStr.replaceAll('amp;', '').split('&')
     
     function add_meal_button(meal_name, opt, meal_info) {
         $('#'+opt).append(`<button class="basic" id=${meal_name} style="width:80%">${meal_name}</button>`)
