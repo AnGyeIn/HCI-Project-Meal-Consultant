@@ -114,7 +114,7 @@
             const saturations = []
             const statistics = {}
             let selected_list = []
-            const items = Object.keys(stocks)
+            let items = Object.keys(stocks)
             const select_total = $('#select-total')
 
             // for sorting ingredients
@@ -139,6 +139,7 @@
             }
 
             saturations.sort((a, b) => b[1] - a[1])
+            items = saturations.map(x => x[0])
 
             // make visulalization
             for (const [name, _] of saturations) {

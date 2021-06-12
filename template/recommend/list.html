@@ -19,44 +19,70 @@
 </div>
 
 <script>
-    let meal_list, meal_record
+    let stocks, meal_list, meal_record                
     const ingredientsStr = '{{ ingredientsStr }}'
     const ingredients = ingredientsStr.replaceAll('amp;', '').split('&')
     
-    function add_meal_button(meal_name, opt, meal_info) {
-        $('#'+opt).append(`<button class="basic" id=${meal_name} style="width:80%">${meal_name}</button>`)
-        $('#'+meal_name).click(() => {
+    function add_meal_button(meal_name, opt) {
+        $('#'+opt).append(`<button class="basic" id="${meal_name.replaceAll(' ', '')}" style="width:80%">${meal_name}</button>`)
+        $('#'+meal_name.replaceAll(' ', '')).click(() => {
             $('input[name=meal_name]').val(meal_name)
             $('input[name=opt]').val(opt)
         })
     }
 
-    $.getJSON('http://localhost:3000/database/meal_list.json', meal_list_file => {
-        meal_list = meal_list_file
-        if (typeof meal_list === 'string')
-            meal_list = JSON.parse(meal_list)
+    function meal_scores(selected_ingredients, meals_obj) {
+        let score_list = []
+        for (const meal_name of Object.keys(meals_obj)) {
+            const obj_ingredients = meals_obj[meal_name]['ingredients']
+            let score = 0
+            for (const {name, count} of obj_ingredients)
+                if (name in selected_ingredients)
+                    score += Math.min(selected_ingredients[name], count)
+            score_list.push([meal_name, score])
+        }
+        score_list = score_list.filter(x => x[1] > 0).sort((a, b) => b[1] - a[1])
+        return score_list.slice(0, 10)
+    }
+
+    $.getJSON('http://localhost:3000/database/stocks.json', stocks_file => {
+        stocks = stocks_file
+        if (typeof stocks === 'string')
+            stocks = JSON.parse(stocks)
         
-        $.getJSON('http://localhost:3000/database/meal_record.json', meal_record_file => {
-            meal_record = meal_record_file
-            if (typeof meal_record === 'string')
-                meal_record = JSON.parse(meal_record)
+        $.getJSON('http://localhost:3000/database/meal_list.json', meal_list_file => {
+            meal_list = meal_list_file
+            if (typeof meal_list === 'string')
+                meal_list = JSON.parse(meal_list)
+        
+            $.getJSON('http://localhost:3000/database/meal_record.json', meal_record_file => {
+                meal_record = meal_record_file
+                if (typeof meal_record === 'string')
+                    meal_record = JSON.parse(meal_record)
 
-            // todo
-            const recommended_exp = meal_record ? meal_record : {}
-            const recommended_new = meal_list
-            Object.keys(recommended_exp).forEach(x => delete recommended_new[x])
+                const selected_ingredients = {}
+                for (const ingredient_name of ingredients)
+                    selected_ingredients[ingredient_name] = stocks[ingredient_name]['date_list'].length
 
-            if (recommended_exp && Object.keys(recommended_exp).length > 0) {
-                d3.select('.emptydata')
-                    .style('display', 'none')
+                let recommended_exp = []
+                if (meal_record)
+                    recommended_exp = meal_scores(selected_ingredients, meal_record)
                 
-                for (const meal_name of Object.keys(recommended_exp))
-                    add_meal_button(meal_name, 'exp', recommended_exp[meal_name])
-            }
+                recommended_exp.forEach(x => delete meal_list[x[0]])
+                let recommended_new = meal_scores(selected_ingredients, meal_list)
 
-            for (const meal_name of Object.keys(recommended_new))
-                add_meal_button(meal_name, 'new', recommended_new[meal_name])
-        })
+                if (recommended_exp.length > 0) {
+                    d3.select('.emptydata')
+                        .style('display', 'none')
+                    
+                    for (const [meal_name, _] of recommended_exp)
+                        add_meal_button(meal_name, 'exp')
+                }
+
+                for (const [meal_name, _] of recommended_new)
+                    add_meal_button(meal_name, 'new')
+            })
+        })    
     })
 </script>
 

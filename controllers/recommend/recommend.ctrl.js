@@ -1,15 +1,9 @@
 const fs = require('fs')
 
 exports.get_list = (req, res) => {
-    //todo
-    console.log(req.params)
-
     res.render('recommend/list.html', req.params)
 }
 exports.post_list = (req, res) => {
-    //todo
-    console.log(req.body)
-
     let recommended
     try {
         recommended = JSON.parse(fs.readFileSync('database/recommended.json'), 'utf-8')
