@@ -9,36 +9,18 @@ Open terminal on the directory you want to work then
 
 `npm install`
 
-Then open your local server by
+Before you open your local server, you need to prepare `.env` file and 'json file for Google Cloud Platform api-key'. These files have private information so that it is not suitable to upload them on public space like github. If you need them, please contact to AN Gyein(agi1997@snu.ac.kr), the team member.
+
+If you equipped with the files, you can open your local server by
 
 `npm start`
 
-And type "localhost:3000" on your browser then you can test your work.
+And type "localhost:3000" on your browser then you can run the project.
 
 To finish your local server, type `Ctrl+C` in your terminal that running the server.
 
-## Before modifying the codes, please switch your branch for safe
-On your terminal
-
-`git branch [your own branch name]`
-
-Then new branch named [your own branch name] is created and type in
-
-`git checkout [your own branch name]`
-
-to switch your branch from 'main' to [your own branch name].
-
-## To download updated code
-Open terminal on the directory you did `git clone` (maybe "HCI_Project_Meal_Consultant/") then
-
-`git pull`
-
-`npm install`
-
-Then openning and closing your local server is same with above.
-
 ## Project scheme
-There are some `static files` that are needed in advance for running the program, as well as some `dynamic files` that created when the local server begins running. It is ok to remove `dynamic files` for test of new user, but `static files` have to be kept.
+There are some `static files` that are needed in advance for running the program, as well as some `dynamic files` that created when the local server begins running. It is ok to remove `dynamic files` to test from initial state, but `static files` have to be kept.
 
 ### `static files`
 1. `database/ingredients_info.json` file has an object whose keys are names of ingredients and values are maximum days to maintain each ingredient.
