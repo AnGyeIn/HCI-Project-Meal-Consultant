@@ -42,35 +42,41 @@
 <script>
     let idx = 0
     function add_tr(ingredients_info) {
+        const id = idx
+        
         const temp = $('template')[0]
         const clon = temp.content.cloneNode(true)
 
-        clon.getElementById('tr').id = 'tr'+idx
-        
-        clon.getElementById('name').name = 'name'+idx
-        clon.getElementById('count').name = 'count'+idx
-
-        clon.getElementById('datepicker').name = 'bought_date'+idx
-        clon.getElementById('datepicker').value = d3.timeFormat('%Y-%m-%d')(new Date)
-        clon.getElementById('datepicker').id = 'datepicker'+idx
-
-        clon.getElementById('limit_duration').name = 'limit_duration'+idx
-
-        const id = idx
-        clon.getElementById('cancel').onclick = function() {
-            $('#tr'+id).remove()
-        }
-        
+        clon.getElementById('tr').id = 'tr'+id
+        clon.getElementById('name').id = 'name'+id
+        clon.getElementById('count').id = 'count'+id
+        clon.getElementById('datepicker').id = 'datepicker'+id
+        clon.getElementById('limit_duration').id = 'limit_duration'+id
+        clon.getElementById('cancel').id = 'cancel'+id
         $('tbody').append(clon)
+        
+        $('#name'+id).attr('name', 'name'+id)
+
+        $('#count'+id).attr('name', 'count'+id)
+
+        const datepicker = $('#datepicker'+id)
+        datepicker.attr('name', 'bought_date'+id)
+        datepicker.datepicker({
+            dateFormat: "yy-mm-dd"
+        })
+        datepicker.val(d3.timeFormat('%Y-%m-%d')(new Date))
+
+        $('#limit_duration'+id).attr('name', 'limit_duration'+id)
+
+        $('#cancel'+id).click(function() {
+            $('#tr'+id).remove()
+        })
+        
 
         $(`input[name=name${id}]`).on('blur', function() {
             const name = $(this).val()
             if (name in ingredients_info)
                 $(`input[name=limit_duration${id}]`).val(ingredients_info[name])
-        })
-
-        $('#datepicker'+id).datepicker({
-            dateFormat: "yy-mm-dd"
         })
 
         idx++

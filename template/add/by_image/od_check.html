@@ -3,6 +3,12 @@
 
 {% block content %}
 
+<style>
+    table, th, td {
+        padding: 1vw;
+    }
+</style>
+
 <div style="text-align:center">
     <h1>이것들이 맞나요?</h1>
     <div style="width:40%; float:left;">
@@ -14,7 +20,7 @@
     <div style="width:60%; float:left;">
         <h2>잘못 인식된 식재료는 수정해주세요.</h2>
         <form action="" method="post">
-            <table>
+            <table style="font-size:100%">
                 <thead>
                     <tr>
                         <th>이미지</th>
@@ -22,6 +28,7 @@
                         <th>개수</th>
                         <th>구입 날짜</th>
                         <th>보관 가능 기간</th>
+                        <th>확인</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -47,6 +54,7 @@
         <td><input id="count" type="count" min="1" value="1" style="width:3vw">개</td>
         <td><input id="datepicker" type="text" style="width:10vw"></td>
         <td><input id="limit_duration" type="count" min="1" style="width:4vw">일</td>
+        <td><input type="checkbox" style="width:3vw; height:3vw;"></td>
     </tr>
 </template>
 
@@ -57,7 +65,7 @@
         'Pear': '배', 'Pepper': '피망', 'Potato': '감자', 'PotSweet': '고구마', 'Tomato': '토마토', 'Walnut': '호두'
     }
     const size = 500
-    const vw = window.innerWidth / 100
+    const vw = innerWidth / 100
 
     let idx = 0
     const svg = d3.select('svg').append('g')
@@ -110,39 +118,48 @@
         img.src = 'http://localhost:3000/{{ filedir }}/{{ filename }}'
 
         function add_detection(coord) {
+            const id = idx
             const [[x0, y0], [x1, y1]] = coord
 
             const temp = $('template')[0]
             const clon = temp.content.cloneNode(true)
 
-            clon.getElementById('tr').id = 'tr'+idx
+            clon.getElementById('tr').id = 'tr'+id
+            clon.getElementById('canvas').id = 'canvas'+id
+            clon.getElementById('name').id = 'name'+id
+            clon.getElementById('count').id = 'count'+id
+            clon.getElementById('datepicker').id = 'datepicker'+id
+            clon.getElementById('limit_duration').id = 'limit_duration'+id
+            clon.getElementById('cancel').id = 'cancel'+id
+            $('tbody').append(clon)
 
-            const canvas = clon.getElementById('canvas')
+            const canvas = $('#canvas'+id)[0]
             canvas.width = 5*vw
             canvas.height = 5*vw
             const ctx = canvas.getContext('2d')
             ctx.drawImage(img, x0, y0, x1-x0, y1-y0, 0, 0, 5*vw, 5*vw)
 
-            clon.getElementById('name').name = 'name'+idx
-            clon.getElementById('count').name = 'count'+idx
+            $('#name'+id).attr('name', 'name'+id)
+            
+            $('#count'+id).attr('name', 'count'+id)
 
-            clon.getElementById('datepicker').name = 'bought_date'+idx
-            clon.getElementById('datepicker').value = d3.timeFormat('%Y-%m-%d')(new Date)
-            clon.getElementById('datepicker').id = 'datepicker'+idx
+            const datepicker = $('#datepicker'+id)
+            datepicker.attr('name', 'bought_date'+id)
+            datepicker.datepicker({
+                dateFormat: "yy-mm-dd"
+            })  
+            datepicker.val(d3.timeFormat('%Y-%m-%d')(new Date))
 
-            clon.getElementById('limit_duration').name = 'limit_duration'+idx
+            $('#limit_duration'+id).attr('name', 'limit_duration'+id)
 
-            const id = idx
-
-            clon.getElementById('cancel').onclick = function() {
+            $('#cancel'+id).click(function() {
                 detectionBoxes = detectionBoxes.filter(d => d.id !== id)
                 drawDetectionBoxes()
                 $('#tr'+id).remove()
-            }        
-
-            $('tbody').append(clon)
+            })
 
             d3.select('#tr'+id)
+                .style('background', '#7777')
                 .on('mouseenter', function() {
                     d3.select('#rect'+id)
                         .attr('stroke', 'red')
@@ -162,15 +179,13 @@
                     $(`input[name=limit_duration${id}]`).val(ingredients_info[name])
             })
 
-            $('#datepicker'+idx).datepicker({
-                dateFormat: "yy-mm-dd"
-            })  
-
             detectionBoxes.push({
-                id: idx,
+                id,
                 coord
             })
             drawDetectionBoxes()
+
+            scrollTo(0, innerHeight)
 
             idx++
         }
@@ -213,6 +228,15 @@
     }
 
     $('#submit').click(() => {
+        let all_checked = true
+        $('input:checkbox').each(function() {
+            all_checked = all_checked && $(this).prop('checked')
+        })
+        if (!all_checked) {
+            alert('모든 식재료가 제대로 인식되었는지 확인 후 각각의 체크박스를 체크해 주세요.')
+            return false
+        }
+
         let name, count, limit_duration
         let isEmpty = true
         for (let i = 0; i < idx; i++) {

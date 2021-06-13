@@ -53,10 +53,6 @@ exports.get_image_upload = (_, res) => {
 }
 
 exports.post_image_upload = async (req, res) => {
-    //todo: for test
-    // const filepath = 'uploadedImages/1a5412e4b823a868041c84581f1bdd6a'
-    // res.redirect('od_check/' + filepath)
-    
     const filepath = req.file.path
     
     let content
