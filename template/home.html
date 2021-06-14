@@ -55,10 +55,11 @@
 
 <script>
     const profile_size = window.innerWidth * 0.95 * 0.082
+    let selected_list = []
 
     $('#calendar').text(((new Date()).getMonth() + 1) + '월')
 
-    function add_item(clon, limit_duration, durations, name, selected_list, items, select_total) {
+    function add_item(clon, limit_duration, durations, name, items, select_total) {
         $('#items-area').append(clon)
 
         const scale = d3.scaleLinear()
@@ -88,7 +89,7 @@
                     )
         const checkbox = $('#select-'+name)
         checkbox.attr('value', name)
-        checkbox.click(() => {
+        checkbox.on('change', function() {
             const isChecked = checkbox.prop('checked')
             if (isChecked) {
                 selected_list.push(name)
@@ -113,7 +114,6 @@
 
             const saturations = []
             const statistics = {}
-            let selected_list = []
             let items = Object.keys(stocks)
             const select_total = $('#select-total')
 
@@ -160,7 +160,7 @@
                 canvas.width = profile_size
                 canvas.height = profile_size
 
-                add_item(clon, limit_duration, durations, name, selected_list, items, select_total)
+                add_item(clon, limit_duration, durations, name, items, select_total)
 
                 if (stocks[name].img) {
                     const img = new Image()
@@ -173,7 +173,7 @@
                 }
             }
 
-            select_total.click(() => {
+            select_total.on('change', function() {
                 const isChecked = select_total.prop('checked')
                 $('input:checkbox').prop('checked', isChecked)
                 selected_list = isChecked ? [...items] : []

@@ -54,7 +54,7 @@
         <td><input id="count" type="count" min="1" value="1" style="width:3vw">개</td>
         <td><input id="datepicker" type="text" style="width:10vw"></td>
         <td><input id="limit_duration" type="count" min="1" style="width:4vw">일</td>
-        <td><input type="checkbox" style="width:3vw; height:3vw;"></td>
+        <td><input id="checkbox" type="checkbox" style="width:3vw; height:3vw;"></td>
     </tr>
 </template>
 
@@ -131,6 +131,7 @@
             clon.getElementById('datepicker').id = 'datepicker'+id
             clon.getElementById('limit_duration').id = 'limit_duration'+id
             clon.getElementById('cancel').id = 'cancel'+id
+            clon.getElementById('checkbox').id = 'checkbox'+id
             $('tbody').append(clon)
 
             const canvas = $('#canvas'+id)[0]
@@ -228,14 +229,14 @@
     }
 
     $('#submit').click(() => {
-        let all_checked = true
-        $('input:checkbox').each(function() {
-            all_checked = all_checked && $(this).prop('checked')
-        })
-        if (!all_checked) {
-            alert('모든 식재료가 제대로 인식되었는지 확인 후 각각의 체크박스를 체크해 주세요.')
-            return false
-        }
+        // let all_checked = true
+        // $('input:checkbox').each(function() {
+        //     all_checked = all_checked && $(this).prop('checked')
+        // })
+        // if (!all_checked) {
+        //     alert('모든 식재료가 제대로 인식되었는지 확인 후 각각의 체크박스를 체크해 주세요.')
+        //     return false
+        // }
 
         let name, count, limit_duration
         let isEmpty = true
@@ -253,6 +254,11 @@
 
             if (!name || !count || !limit_duration) {
                 alert('식재료명, 개수, 보관 가능 기간을 모두 입력해주세요!')
+                return false
+            }
+
+            if (!$('#checkbox'+i).prop('checked')) {
+                alert('모든 식재료가 제대로 인식되었는지 확인 후 각각의 체크박스를 체크해 주세요.')
                 return false
             }
 
